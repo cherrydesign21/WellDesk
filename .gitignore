@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+.turbo/
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+npm-debug.log*
+supabase/.temp/
