@@ -12,3 +12,6 @@ build/
 Thumbs.db
 npm-debug.log*
 supabase/.temp/
+
+.vercel
+.env*

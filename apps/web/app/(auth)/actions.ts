@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getSiteUrl } from '@/lib/site';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@welldesk/shared';
 
 export async function login(values: LoginInput) {
@@ -34,6 +35,7 @@ export async function register(values: RegisterInput) {
         full_name: parsed.data.fullName,
         practice_name: parsed.data.practiceName,
       },
+      emailRedirectTo: `${getSiteUrl()}/auth/callback`,
     },
   });
 
