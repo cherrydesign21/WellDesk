@@ -30,7 +30,7 @@ create table practices (
   font_choice text not null default 'inter',
   currency text not null default 'INR',
   timezone text not null default 'Asia/Kolkata',
-  owner_user_id uuid not null references auth.users(id),
+  owner_user_id uuid not null references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
