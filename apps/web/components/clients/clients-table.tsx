@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
@@ -122,7 +123,11 @@ export function ClientsTable({
                 enrollment && client.status === 'active' && daysUntil(enrollment.expiry_date) <= 7;
               return (
                 <TableRow key={client.id}>
-                  <TableCell className="font-medium">{client.full_name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/clients/${client.id}`} className="hover:underline">
+                      {client.full_name}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <div className="text-sm">{client.phone}</div>
                     <div className="text-xs text-muted-foreground">{client.email}</div>

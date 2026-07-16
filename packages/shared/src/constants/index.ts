@@ -70,3 +70,18 @@ export function calculateExpiryDate(startDate: string, planType: PlanType, custo
   start.setDate(start.getDate() + days);
   return start.toISOString().slice(0, 10);
 }
+
+export const METRIC_FIELDS = [
+  { key: 'weight_kg', label: 'Weight', unit: 'kg' },
+  { key: 'bmi', label: 'BMI', unit: '' },
+  { key: 'systolic_bp', label: 'Systolic BP', unit: 'mmHg' },
+  { key: 'diastolic_bp', label: 'Diastolic BP', unit: 'mmHg' },
+  { key: 'blood_sugar_fasting', label: 'Blood Sugar (Fasting)', unit: 'mg/dL' },
+  { key: 'blood_sugar_post_meal', label: 'Blood Sugar (Post-meal)', unit: 'mg/dL' },
+  { key: 'waist_cm', label: 'Waist', unit: 'cm' },
+  { key: 'chest_cm', label: 'Chest', unit: 'cm' },
+  { key: 'hips_cm', label: 'Hips', unit: 'cm' },
+  { key: 'body_fat_pct', label: 'Body Fat %', unit: '%' },
+] as const;
+
+export type MetricFieldKey = (typeof METRIC_FIELDS)[number]['key'];
