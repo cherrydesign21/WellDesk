@@ -35,6 +35,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
             Diet Plan Templates
           </Link>
           <Link
+            href="/payments"
+            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+          >
+            Payments
+          </Link>
+          <Link
             href="/settings/branding"
             className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
           >

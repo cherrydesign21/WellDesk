@@ -11,6 +11,9 @@ import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { MetricsHistoryTable } from '@/components/metrics/metrics-history-table';
 import { EnrollmentTimeline } from '@/components/enrollments/enrollment-timeline';
+import { LogPaymentDialog } from '@/components/payments/log-payment-dialog';
+import { PaymentSummary } from '@/components/payments/payment-summary';
+import { PaymentsHistoryTable } from '@/components/payments/payments-history-table';
 import type { MetricRow } from '@/components/metrics/types';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -52,6 +55,20 @@ export default async function ClientDetailPage({
 
   const latestEnrollment = enrollments?.[0] ?? null;
   const effectiveStatus = getEffectiveClientStatus(client.status, latestEnrollment);
+
+  const { data: payments } = await supabase
+    .from('payments')
+    .select('id, amount, payment_date, mode, reference_no, notes')
+    .eq('client_id', clientId)
+    .order('payment_date', { ascending: false });
+
+  const { data: paymentSummary } = latestEnrollment
+    ? await supabase
+        .from('v_enrollment_payment_status')
+        .select('plan_amount, amount_paid, amount_due, payment_status')
+        .eq('enrollment_id', latestEnrollment.id)
+        .single()
+    : { data: null };
 
   const { data: metrics } = await supabase
     .from('health_metrics')
@@ -101,6 +118,24 @@ export default async function ClientDetailPage({
       </div>
 
       <EnrollmentTimeline clientId={client.id} enrollments={enrollments ?? []} />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">Payments</h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              render={<a href={`/api/payments/export?clientId=${client.id}`} />}
+            >
+              Export
+            </Button>
+            <LogPaymentDialog clientId={client.id} />
+          </div>
+        </div>
+        <PaymentSummary summary={paymentSummary} />
+        <PaymentsHistoryTable clientId={client.id} rows={payments ?? []} />
+      </div>
 
       <MetricsChart rows={rows} />
       <MetricsCompare rows={rows} />
