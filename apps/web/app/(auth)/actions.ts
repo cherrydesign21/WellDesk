@@ -17,7 +17,7 @@ export async function login(values: LoginInput) {
     return { error: error.message };
   }
 
-  redirect('/clients');
+  redirect('/');
 }
 
 export async function register(values: RegisterInput) {
@@ -47,7 +47,7 @@ export async function register(values: RegisterInput) {
     return { message: 'Account created — check your email to confirm before logging in.' };
   }
 
-  redirect('/clients');
+  redirect('/');
 }
 
 export async function logout() {

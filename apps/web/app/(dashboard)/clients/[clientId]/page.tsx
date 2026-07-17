@@ -14,6 +14,7 @@ import { EnrollmentTimeline } from '@/components/enrollments/enrollment-timeline
 import { LogPaymentDialog } from '@/components/payments/log-payment-dialog';
 import { PaymentSummary } from '@/components/payments/payment-summary';
 import { PaymentsHistoryTable } from '@/components/payments/payments-history-table';
+import { IdealWeightCard } from '@/components/metrics/ideal-weight-card';
 import type { MetricRow } from '@/components/metrics/types';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -41,7 +42,7 @@ export default async function ClientDetailPage({
 
   const { data: client } = await supabase
     .from('clients')
-    .select('id, full_name, phone, email, status')
+    .select('id, full_name, phone, email, status, gender')
     .eq('id', clientId)
     .single();
 
@@ -78,14 +79,16 @@ export default async function ClientDetailPage({
     .eq('client_id', clientId)
     .order('recorded_at', { ascending: true });
 
-  const rows: MetricRow[] = (metrics ?? []).reduce<{ list: MetricRow[]; lastHeight: number | null }>(
+  const metricsAccumulated = (metrics ?? []).reduce<{ list: MetricRow[]; lastHeight: number | null }>(
     (state, m) => {
       const lastHeight = m.height_cm ?? state.lastHeight;
       const bmi = m.weight_kg && lastHeight ? calculateBmi(m.weight_kg, lastHeight) : null;
       return { list: [...state.list, { ...m, bmi }], lastHeight };
     },
     { list: [], lastHeight: null }
-  ).list;
+  );
+  const rows = metricsAccumulated.list;
+  const latestWeightKg = [...rows].reverse().find((r) => r.weight_kg != null)?.weight_kg ?? null;
 
   return (
     <div className="space-y-6">
@@ -110,6 +113,12 @@ export default async function ClientDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            render={<a href={`/api/clients/${client.id}/report-card`} />}
+          >
+            Report Card
+          </Button>
           <Button variant="outline" render={<Link href={`/clients/${client.id}/diet-plans`} />}>
             Diet Plans
           </Button>
@@ -136,6 +145,12 @@ export default async function ClientDetailPage({
         <PaymentSummary summary={paymentSummary} />
         <PaymentsHistoryTable clientId={client.id} rows={payments ?? []} />
       </div>
+
+      <IdealWeightCard
+        heightCm={metricsAccumulated.lastHeight}
+        gender={client.gender}
+        currentWeightKg={latestWeightKg}
+      />
 
       <MetricsChart rows={rows} />
       <MetricsCompare rows={rows} />

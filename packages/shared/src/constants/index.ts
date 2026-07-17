@@ -64,6 +64,16 @@ export function calculateBmi(weightKg: number, heightCm: number): number | null 
   return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
 }
 
+// Devine formula — the standard clinical estimate of ideal body weight.
+// Only meaningful above ~5ft (152.4cm); shorter heights floor at the base weight.
+export function calculateIdealWeightKg(heightCm: number, gender: Gender | null | undefined): number | null {
+  if (!heightCm) return null;
+  const heightInches = heightCm / 2.54;
+  const inchesOver5Ft = Math.max(0, heightInches - 60);
+  const base = gender === 'female' ? 45.5 : 50;
+  return Math.round((base + 2.3 * inchesOver5Ft) * 10) / 10;
+}
+
 export function calculateExpiryDate(startDate: string, planType: PlanType, customDurationDays?: number): string {
   const days = planType === 'custom' ? customDurationDays ?? 0 : PLAN_TYPE_DAYS[planType] ?? 0;
   const start = new Date(startDate);
