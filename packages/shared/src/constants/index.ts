@@ -85,3 +85,34 @@ export const METRIC_FIELDS = [
 ] as const;
 
 export type MetricFieldKey = (typeof METRIC_FIELDS)[number]['key'];
+
+export const ENROLLMENT_STATUSES = ['active', 'expired', 'paused'] as const;
+export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
+
+export function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// enrollments.status only flips to 'expired' when something writes it —
+// there's no cron job, so treat an active cycle past its expiry_date as
+// expired for display purposes without needing to persist that transition.
+export function getEffectiveEnrollmentStatus(enrollment: {
+  status: string;
+  expiry_date: string;
+}): EnrollmentStatus {
+  if (enrollment.status === 'active' && enrollment.expiry_date < todayISO()) {
+    return 'expired';
+  }
+  return enrollment.status as EnrollmentStatus;
+}
+
+export function getEffectiveClientStatus(
+  clientStatus: ClientStatus,
+  latestEnrollment?: { status: string; expiry_date: string } | null
+): ClientStatus {
+  if (clientStatus === 'archived' || clientStatus === 'paused') return clientStatus;
+  if (latestEnrollment && getEffectiveEnrollmentStatus(latestEnrollment) === 'expired') {
+    return 'expired';
+  }
+  return clientStatus;
+}

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
-import { PLAN_TYPE_LABELS } from '@welldesk/shared';
+import { PLAN_TYPE_LABELS, getEffectiveClientStatus, type ClientStatus } from '@welldesk/shared';
 import { archiveClient, reactivateClient } from '@/app/(dashboard)/clients/actions';
 import { EditClientDialog, type EditableClient } from './edit-client-dialog';
 import { Input } from '@/components/ui/input';
@@ -119,8 +119,9 @@ export function ClientsTable({
             )}
             {clients.map((client) => {
               const enrollment = latestEnrollment(client.enrollments);
+              const effectiveStatus = getEffectiveClientStatus(client.status as ClientStatus, enrollment);
               const expiringSoon =
-                enrollment && client.status === 'active' && daysUntil(enrollment.expiry_date) <= 7;
+                enrollment && effectiveStatus === 'active' && daysUntil(enrollment.expiry_date) <= 7;
               return (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
@@ -147,8 +148,8 @@ export function ClientsTable({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={statusVariant(client.status)} className="capitalize">
-                      {client.status}
+                    <Badge variant={statusVariant(effectiveStatus)} className="capitalize">
+                      {effectiveStatus}
                     </Badge>
                   </TableCell>
                   <TableCell>

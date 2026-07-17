@@ -3,13 +3,14 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { calculateBmi } from '@welldesk/shared';
+import { calculateBmi, getEffectiveClientStatus } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LogMetricDialog } from '@/components/metrics/log-metric-dialog';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { MetricsHistoryTable } from '@/components/metrics/metrics-history-table';
+import { EnrollmentTimeline } from '@/components/enrollments/enrollment-timeline';
 import type { MetricRow } from '@/components/metrics/types';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -43,6 +44,15 @@ export default async function ClientDetailPage({
 
   if (!client) notFound();
 
+  const { data: enrollments } = await supabase
+    .from('enrollments')
+    .select('id, cycle_number, plan_type, start_date, expiry_date, status, plan_amount')
+    .eq('client_id', clientId)
+    .order('cycle_number', { ascending: false });
+
+  const latestEnrollment = enrollments?.[0] ?? null;
+  const effectiveStatus = getEffectiveClientStatus(client.status, latestEnrollment);
+
   const { data: metrics } = await supabase
     .from('health_metrics')
     .select(
@@ -73,8 +83,8 @@ export default async function ClientDetailPage({
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold">{client.full_name}</h1>
-            <Badge variant={statusVariant(client.status)} className="capitalize">
-              {client.status}
+            <Badge variant={statusVariant(effectiveStatus)} className="capitalize">
+              {effectiveStatus}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -89,6 +99,8 @@ export default async function ClientDetailPage({
           <LogMetricDialog clientId={client.id} />
         </div>
       </div>
+
+      <EnrollmentTimeline clientId={client.id} enrollments={enrollments ?? []} />
 
       <MetricsChart rows={rows} />
       <MetricsCompare rows={rows} />
