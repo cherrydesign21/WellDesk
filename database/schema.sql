@@ -370,3 +370,37 @@ create policy tenant_isolation_diet_plan_meal_items on diet_plan_meal_items
     exists (select 1 from diet_plan_meals m join diet_plans dp on dp.id = m.diet_plan_id
       where m.id = diet_plan_meal_items.meal_id and dp.practice_id = public.current_practice_id())
   );
+
+-- ============================================================
+-- STORAGE — practice logo uploads (module 5: Dashboard Branding)
+-- ============================================================
+-- public read (logos render in exported PDFs and public share pages),
+-- writes restricted to the uploading practice's own folder.
+insert into storage.buckets (id, name, public)
+values ('logos', 'logos', true)
+on conflict (id) do nothing;
+
+create policy "Public read access to logos"
+on storage.objects for select
+using (bucket_id = 'logos');
+
+create policy "Practice members can upload their own logo"
+on storage.objects for insert
+with check (
+  bucket_id = 'logos'
+  and (storage.foldername(name))[1] = public.current_practice_id()::text
+);
+
+create policy "Practice members can update their own logo"
+on storage.objects for update
+using (
+  bucket_id = 'logos'
+  and (storage.foldername(name))[1] = public.current_practice_id()::text
+);
+
+create policy "Practice members can delete their own logo"
+on storage.objects for delete
+using (
+  bucket_id = 'logos'
+  and (storage.foldername(name))[1] = public.current_practice_id()::text
+);

@@ -1,9 +1,18 @@
-import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet, pdf } from '@react-pdf/renderer';
 import type { PlanWithMeals } from '@/lib/diet-plans';
 
 const styles = StyleSheet.create({
   page: { padding: 32, fontSize: 11, fontFamily: 'Helvetica' },
-  header: { marginBottom: 16, borderBottom: 1, borderColor: '#999999', paddingBottom: 8 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+    borderBottom: 1,
+    borderColor: '#999999',
+    paddingBottom: 8,
+  },
+  logo: { width: 36, height: 36, objectFit: 'contain' },
   practiceName: { fontSize: 16, fontWeight: 700 },
   tagline: { fontSize: 10, color: '#666666' },
   planTitle: { fontSize: 14, fontWeight: 700, marginTop: 12 },
@@ -24,17 +33,28 @@ const styles = StyleSheet.create({
   colNotes: { width: '25%' },
 });
 
-type PracticeBranding = { name: string; tagline: string | null; primary_color: string | null };
+type PracticeBranding = {
+  name: string;
+  tagline: string | null;
+  primary_color: string | null;
+  logo_url?: string | null;
+};
 
 export async function renderPlanPdf(plan: PlanWithMeals, practice: PracticeBranding): Promise<Blob> {
   const doc = (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={[styles.practiceName, { color: practice.primary_color ?? '#111111' }]}>
-            {practice.name}
-          </Text>
-          {practice.tagline ? <Text style={styles.tagline}>{practice.tagline}</Text> : null}
+          {practice.logo_url ? (
+            // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer's Image, not an <img>
+            <Image style={styles.logo} src={practice.logo_url} />
+          ) : null}
+          <View>
+            <Text style={[styles.practiceName, { color: practice.primary_color ?? '#111111' }]}>
+              {practice.name}
+            </Text>
+            {practice.tagline ? <Text style={styles.tagline}>{practice.tagline}</Text> : null}
+          </View>
         </View>
         <Text style={styles.planTitle}>{plan.name}</Text>
         <Text style={styles.planMeta}>

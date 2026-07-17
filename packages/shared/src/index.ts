@@ -4,3 +4,4 @@ export * from './schemas/enrollment';
 export * from './schemas/auth';
 export * from './schemas/health-metric';
 export * from './schemas/diet-plan';
+export * from './schemas/branding';
