@@ -149,3 +149,22 @@ export async function reactivateClient(clientId: string) {
   revalidatePath('/clients');
   return { success: true };
 }
+
+export async function bulkArchiveClients(clientIds: string[]) {
+  if (clientIds.length === 0) {
+    return { error: 'No clients selected' };
+  }
+
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase
+    .from('clients')
+    .update({ status: 'archived', archived_at: new Date().toISOString() })
+    .in('id', clientIds);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/clients');
+  return { success: true };
+}
