@@ -173,6 +173,7 @@ create table diet_plans (
   version int not null default 1,
   supersedes_plan_id uuid references diet_plans(id),
   status text not null default 'active' check (status in ('active', 'superseded', 'archived')),
+  share_token text unique,
   created_by uuid references profiles(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -181,6 +182,7 @@ create table diet_plans (
 
 create index idx_diet_plans_client on diet_plans(client_id);
 create index idx_diet_plans_templates on diet_plans(practice_id) where is_template;
+create index idx_diet_plans_share_token on diet_plans(share_token) where share_token is not null;
 
 create table diet_plan_meals (
   id uuid primary key default gen_random_uuid(),

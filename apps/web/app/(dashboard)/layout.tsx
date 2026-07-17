@@ -21,6 +21,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
           >
             Clients
           </Link>
+          <Link
+            href="/diet-plans/templates"
+            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+          >
+            Diet Plan Templates
+          </Link>
         </nav>
         <form action={logout}>
           <Button type="submit" variant="ghost" className="w-full justify-start">

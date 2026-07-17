@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { calculateBmi } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { LogMetricDialog } from '@/components/metrics/log-metric-dialog';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
@@ -81,7 +82,12 @@ export default async function ClientDetailPage({
             {client.email ? ` · ${client.email}` : ''}
           </p>
         </div>
-        <LogMetricDialog clientId={client.id} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" render={<Link href={`/clients/${client.id}/diet-plans`} />}>
+            Diet Plans
+          </Button>
+          <LogMetricDialog clientId={client.id} />
+        </div>
       </div>
 
       <MetricsChart rows={rows} />
