@@ -32,3 +32,32 @@ export async function requireProfile() {
   }
   return result;
 }
+
+export async function getCurrentClient(supabase: SupabaseClient) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, full_name, email, practice_id, practices(name, tagline, logo_url, primary_color)')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!client) return null;
+
+  const practiceRow = Array.isArray(client.practices) ? client.practices[0] : client.practices;
+
+  return { user, client: { ...client, practices: practiceRow } };
+}
+
+export async function requireClient() {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    redirect('/portal/login');
+  }
+  return result;
+}

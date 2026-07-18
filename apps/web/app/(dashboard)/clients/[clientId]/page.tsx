@@ -15,6 +15,7 @@ import { LogPaymentDialog } from '@/components/payments/log-payment-dialog';
 import { PaymentSummary } from '@/components/payments/payment-summary';
 import { PaymentsHistoryTable } from '@/components/payments/payments-history-table';
 import { IdealWeightCard } from '@/components/metrics/ideal-weight-card';
+import { PortalAccessCard } from '@/components/clients/portal-access-card';
 import type { MetricRow } from '@/components/metrics/types';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -42,7 +43,7 @@ export default async function ClientDetailPage({
 
   const { data: client } = await supabase
     .from('clients')
-    .select('id, full_name, phone, email, status, gender')
+    .select('id, full_name, phone, email, status, gender, user_id')
     .eq('id', clientId)
     .single();
 
@@ -125,6 +126,8 @@ export default async function ClientDetailPage({
           <LogMetricDialog clientId={client.id} />
         </div>
       </div>
+
+      <PortalAccessCard clientId={client.id} hasPortalAccess={!!client.user_id} />
 
       <EnrollmentTimeline clientId={client.id} enrollments={enrollments ?? []} />
 

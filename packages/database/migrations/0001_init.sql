@@ -90,6 +90,7 @@ create table clients (
   photo_url text,
   status client_status not null default 'active',
   notes text,
+  user_id uuid unique references auth.users(id) on delete set null,
   created_by uuid references profiles(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -97,6 +98,7 @@ create table clients (
 );
 
 create index idx_clients_practice on clients(practice_id);
+create index idx_clients_user on clients(user_id) where user_id is not null;
 create index idx_clients_status on clients(practice_id, status);
 create index idx_clients_phone on clients(practice_id, phone);
 create index idx_clients_email on clients(practice_id, lower(email));
@@ -404,3 +406,52 @@ using (
   bucket_id = 'logos'
   and (storage.foldername(name))[1] = public.current_practice_id()::text
 );
+
+-- ============================================================
+-- CLIENT PORTAL (Phase 2) — read-only access for clients.user_id holders
+-- ============================================================
+-- resolves the calling auth user to their own client row, if any. A client
+-- who logs in has no profiles row, so current_practice_id() is null for
+-- them and the existing dietitian policies simply don't match — these are
+-- additive policies, not replacements.
+create or replace function public.current_client_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select id from public.clients where user_id = auth.uid()
+$$;
+
+create policy client_self_select on clients
+  for select using (id = public.current_client_id());
+
+create policy client_practice_select on practices
+  for select using (
+    id = (select practice_id from clients where user_id = auth.uid())
+  );
+
+create policy client_enrollments_select on enrollments
+  for select using (client_id = public.current_client_id());
+
+create policy client_health_metrics_select on health_metrics
+  for select using (client_id = public.current_client_id());
+
+create policy client_diet_plans_select on diet_plans
+  for select using (client_id = public.current_client_id());
+
+create policy client_diet_plan_meals_select on diet_plan_meals
+  for select using (
+    exists (select 1 from diet_plans dp where dp.id = diet_plan_meals.diet_plan_id
+      and dp.client_id = public.current_client_id())
+  );
+
+create policy client_diet_plan_meal_items_select on diet_plan_meal_items
+  for select using (
+    exists (select 1 from diet_plan_meals m join diet_plans dp on dp.id = m.diet_plan_id
+      where m.id = diet_plan_meal_items.meal_id and dp.client_id = public.current_client_id())
+  );
+
+create policy client_payments_select on payments
+  for select using (client_id = public.current_client_id());
