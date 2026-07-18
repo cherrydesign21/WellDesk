@@ -126,3 +126,44 @@ export function getEffectiveClientStatus(
   }
   return clientStatus;
 }
+
+export const APPOINTMENT_STATUSES = ['scheduled', 'completed', 'cancelled', 'no_show'] as const;
+export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+
+export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+  scheduled: 'Scheduled',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  no_show: 'No-show',
+};
+
+// Converts a wall-clock date+time as entered in a given IANA timezone (e.g.
+// the practice's configured timezone) into the correct UTC instant. Needed
+// because the server (Vercel, UTC) must not interpret "9:00 AM" as 9:00 UTC.
+export function zonedTimeToUtcIso(dateStr: string, timeStr: string, timeZone: string): string {
+  const naiveUtc = new Date(`${dateStr}T${timeStr}:00Z`);
+  const zoned = new Date(naiveUtc.toLocaleString('en-US', { timeZone }));
+  const utc = new Date(naiveUtc.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const offsetMs = zoned.getTime() - utc.getTime();
+  return new Date(naiveUtc.getTime() - offsetMs).toISOString();
+}
+
+// The inverse direction, for grouping/display: which local calendar day (in
+// the practice's timezone) does this stored UTC instant fall on.
+export function utcIsoToLocalDateKey(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(iso));
+}
+
+export function utcIsoToLocalTime(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(new Date(iso));
+}

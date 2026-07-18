@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { calculateBmi, getEffectiveClientStatus } from '@welldesk/shared';
+import { calculateBmi, getEffectiveClientStatus, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LogMetricDialog } from '@/components/metrics/log-metric-dialog';
@@ -16,6 +16,8 @@ import { PaymentSummary } from '@/components/payments/payment-summary';
 import { PaymentsHistoryTable } from '@/components/payments/payments-history-table';
 import { IdealWeightCard } from '@/components/metrics/ideal-weight-card';
 import { PortalAccessCard } from '@/components/clients/portal-access-card';
+import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
+import { AppointmentsList, type AppointmentRow } from '@/components/appointments/appointments-list';
 import type { MetricRow } from '@/components/metrics/types';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -91,6 +93,23 @@ export default async function ClientDetailPage({
   const rows = metricsAccumulated.list;
   const latestWeightKg = [...rows].reverse().find((r) => r.weight_kg != null)?.weight_kg ?? null;
 
+  const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
+  const { data: appointments } = await supabase
+    .from('appointments')
+    .select('id, client_id, starts_at, status, notes')
+    .eq('client_id', clientId)
+    .order('starts_at', { ascending: false });
+
+  const appointmentRows: AppointmentRow[] = (appointments ?? []).map((a) => ({
+    id: a.id,
+    client_id: a.client_id,
+    client_name: client.full_name,
+    local_date: utcIsoToLocalDateKey(a.starts_at, timezone),
+    local_time: utcIsoToLocalTime(a.starts_at, timezone),
+    status: a.status,
+    notes: a.notes,
+  }));
+
   return (
     <div className="space-y-6">
       <Link
@@ -123,6 +142,7 @@ export default async function ClientDetailPage({
           <Button variant="outline" render={<Link href={`/clients/${client.id}/diet-plans`} />}>
             Diet Plans
           </Button>
+          <NewAppointmentDialog clientId={client.id} triggerLabel="Schedule Visit" />
           <LogMetricDialog clientId={client.id} />
         </div>
       </div>
@@ -130,6 +150,11 @@ export default async function ClientDetailPage({
       <PortalAccessCard clientId={client.id} hasPortalAccess={!!client.user_id} />
 
       <EnrollmentTimeline clientId={client.id} enrollments={enrollments ?? []} />
+
+      <div>
+        <h2 className="mb-3 text-lg font-medium">Appointments</h2>
+        <AppointmentsList rows={appointmentRows} />
+      </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">

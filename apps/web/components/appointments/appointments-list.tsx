@@ -1,0 +1,98 @@
+'use client';
+
+import { useTransition } from 'react';
+import Link from 'next/link';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { APPOINTMENT_STATUSES, APPOINTMENT_STATUS_LABELS, type AppointmentStatus } from '@welldesk/shared';
+import { updateAppointmentStatus, deleteAppointment } from '@/app/(dashboard)/appointments/actions';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+export type AppointmentRow = {
+  id: string;
+  client_id: string;
+  client_name: string;
+  local_date: string;
+  local_time: string;
+  status: AppointmentStatus;
+  notes: string | null;
+};
+
+export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
+  const [isPending, startTransition] = useTransition();
+
+  function handleStatusChange(id: string, status: string | null) {
+    if (!status) return;
+    startTransition(async () => {
+      const result = await updateAppointmentStatus(id, status as AppointmentStatus);
+      if (result?.error) toast.error(result.error);
+    });
+  }
+
+  function handleDelete(id: string) {
+    if (!window.confirm('Delete this appointment?')) return;
+    startTransition(async () => {
+      const result = await deleteAppointment(id);
+      if (result?.error) toast.error(result.error);
+      else toast.success('Appointment deleted');
+    });
+  }
+
+  if (rows.length === 0) {
+    return <p className="text-sm text-muted-foreground">No appointments this month.</p>;
+  }
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Time</TableHead>
+            <TableHead>Client</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.id}>
+              <TableCell className="whitespace-nowrap">{row.local_date}</TableCell>
+              <TableCell className="whitespace-nowrap">{row.local_time}</TableCell>
+              <TableCell>
+                <Link href={`/clients/${row.client_id}`} className="hover:underline">
+                  {row.client_name}
+                </Link>
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={row.status}
+                  onValueChange={(v) => handleStatusChange(row.id, v)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {APPOINTMENT_STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {APPOINTMENT_STATUS_LABELS[s]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <Button variant="ghost" size="icon" disabled={isPending} onClick={() => handleDelete(row.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

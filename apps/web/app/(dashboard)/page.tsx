@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { getEffectiveClientStatus, type ClientStatus } from '@welldesk/shared';
+import { getEffectiveClientStatus, utcIsoToLocalDateKey, utcIsoToLocalTime, type ClientStatus } from '@welldesk/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Enrollment = { plan_type: string; expiry_date: string; status: string; cycle_number: number };
@@ -111,6 +111,33 @@ export default async function DashboardPage() {
     sub: `Due ${r.amount_due}`,
   }));
 
+  const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
+  const todayLocalKey = utcIsoToLocalDateKey(new Date().toISOString(), timezone);
+
+  const { data: upcomingAppointments } = await supabase
+    .from('appointments')
+    .select('id, client_id, starts_at, clients(full_name)')
+    .eq('status', 'scheduled')
+    .order('starts_at', { ascending: true });
+
+  type AppointmentJoined = {
+    id: string;
+    client_id: string;
+    starts_at: string;
+    clients: { full_name: string } | { full_name: string }[] | null;
+  };
+
+  const todaysAppointments = ((upcomingAppointments ?? []) as AppointmentJoined[])
+    .filter((a) => utcIsoToLocalDateKey(a.starts_at, timezone) === todayLocalKey)
+    .map((a) => {
+      const clientRel = Array.isArray(a.clients) ? a.clients[0] : a.clients;
+      return {
+        id: a.client_id,
+        label: clientRel?.full_name ?? 'Unknown',
+        sub: utcIsoToLocalTime(a.starts_at, timezone),
+      };
+    });
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -122,7 +149,7 @@ export default async function DashboardPage() {
         <StatCard label="Overdue payments" value={overduePayments.length} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <AlertList
           title="Expiring soon"
           items={expiringSoon.map((c) => ({
@@ -140,6 +167,7 @@ export default async function DashboardPage() {
           }))}
         />
         <AlertList title="Overdue payments" items={overduePayments} />
+        <AlertList title="Today's appointments" items={todaysAppointments} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
 import { getPlanWithMeals } from '@/lib/diet-plans';
-import { calculateBmi } from '@welldesk/shared';
+import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
 import { PlanView } from '@/components/diet-plans/plan-view';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,6 +47,15 @@ export default async function PortalPage() {
     .eq('client_id', client.id)
     .order('payment_date', { ascending: false });
 
+  const timezone = client.practices?.timezone ?? 'Asia/Kolkata';
+  const { data: appointments } = await supabase
+    .from('appointments')
+    .select('id, starts_at, status')
+    .eq('client_id', client.id)
+    .eq('status', 'scheduled')
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at', { ascending: true });
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Hi {client.full_name.split(' ')[0]}</h1>
@@ -63,6 +72,24 @@ export default async function PortalPage() {
       <div>
         <h2 className="mb-3 text-lg font-medium">Your Progress</h2>
         <MetricsChart rows={rows} />
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-lg font-medium">Upcoming Appointments</h2>
+        {!appointments || appointments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No upcoming appointments.</p>
+        ) : (
+          <Card>
+            <CardContent className="space-y-2 pt-4">
+              {appointments.map((a) => (
+                <div key={a.id} className="flex items-center justify-between text-sm">
+                  <span className="font-medium">{utcIsoToLocalDateKey(a.starts_at, timezone)}</span>
+                  <span className="text-muted-foreground">{utcIsoToLocalTime(a.starts_at, timezone)}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div>

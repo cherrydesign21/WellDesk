@@ -47,6 +47,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
             Payments
           </Link>
           <Link
+            href="/appointments"
+            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+          >
+            Appointments
+          </Link>
+          <Link
             href="/settings/branding"
             className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
           >
