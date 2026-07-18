@@ -1,10 +1,11 @@
 'use client';
 
 import { useTransition } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { deletePayment } from '@/app/(dashboard)/clients/[clientId]/payments/actions';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export type PaymentRow = {
@@ -29,7 +30,7 @@ export function PaymentsHistoryTable({ clientId, rows }: { clientId: string; row
   }
 
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No payments logged yet.</p>;
+    return <EmptyState icon={Wallet} title="No payments logged yet" compact />;
   }
 
   const sorted = [...rows].sort((a, b) => b.payment_date.localeCompare(a.payment_date));

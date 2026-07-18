@@ -1,10 +1,11 @@
 'use client';
 
 import { useTransition } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { deleteHealthMetric } from '@/app/(dashboard)/clients/[clientId]/actions';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { MetricRow } from './types';
 
@@ -28,7 +29,7 @@ export function MetricsHistoryTable({ clientId, rows }: { clientId: string; rows
   }
 
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No metrics logged yet.</p>;
+    return <EmptyState icon={Activity} title="No metrics logged yet" compact />;
   }
 
   const sorted = [...rows].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at));

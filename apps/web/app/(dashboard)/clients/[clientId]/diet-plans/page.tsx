@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default async function ClientDietPlansPage({
@@ -76,8 +78,8 @@ export default async function ClientDietPlansPage({
           <TableBody>
             {(!plans || plans.length === 0) && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  No plans yet.
+                <TableCell colSpan={4}>
+                  <EmptyState icon={UtensilsCrossed} title="No plans yet" compact />
                 </TableCell>
               </TableRow>
             )}

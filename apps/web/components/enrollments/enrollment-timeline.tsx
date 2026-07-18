@@ -1,5 +1,7 @@
+import { History } from 'lucide-react';
 import { PLAN_TYPE_LABELS, getEffectiveEnrollmentStatus } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PauseResumeButton } from './pause-resume-button';
 import { RestartPlanDialog } from './restart-plan-dialog';
 
@@ -47,7 +49,7 @@ export function EnrollmentTimeline({ clientId, enrollments }: { clientId: string
       </div>
 
       {sorted.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No enrollment cycles yet.</p>
+        <EmptyState icon={History} title="No enrollment cycles yet" compact />
       ) : (
         <div className="space-y-3">
           {sorted.map((e) => {

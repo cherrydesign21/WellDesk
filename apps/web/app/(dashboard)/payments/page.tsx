@@ -1,6 +1,8 @@
+import { Wallet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -78,8 +80,8 @@ export default async function PaymentsPage({
           <TableBody>
             {(!payments || payments.length === 0) && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No payments found.
+                <TableCell colSpan={5}>
+                  <EmptyState icon={Wallet} title="No payments found" compact />
                 </TableCell>
               </TableRow>
             )}

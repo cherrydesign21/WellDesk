@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, ArrowDownAZ, ArrowUpAZ } from 'lucide-react';
+import { MoreHorizontal, ArrowDownAZ, ArrowUpAZ, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { PLAN_TYPE_LABELS, PLAN_TYPES, GENDERS, CLIENT_STATUSES } from '@welldesk/shared';
 import { archiveClient, reactivateClient, bulkArchiveClients } from '@/app/(dashboard)/clients/actions';
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -315,8 +316,8 @@ export function ClientsTable({ clients, filters }: { clients: ClientRow[]; filte
           <TableBody>
             {clients.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  No clients found.
+                <TableCell colSpan={8}>
+                  <EmptyState icon={Users} title="No clients found" description="Add your first client to get started." compact />
                 </TableCell>
               </TableRow>
             )}

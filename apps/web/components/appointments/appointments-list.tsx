@@ -2,11 +2,12 @@
 
 import { useTransition } from 'react';
 import Link from 'next/link';
-import { Trash2 } from 'lucide-react';
+import { Trash2, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { APPOINTMENT_STATUSES, APPOINTMENT_STATUS_LABELS, type AppointmentStatus } from '@welldesk/shared';
 import { updateAppointmentStatus, deleteAppointment } from '@/app/(dashboard)/appointments/actions';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -41,7 +42,7 @@ export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
   }
 
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No appointments this month.</p>;
+    return <EmptyState icon={CalendarDays} title="No appointments this month" compact />;
   }
 
   return (

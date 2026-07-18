@@ -1,3 +1,4 @@
+import { UtensilsCrossed, CalendarDays, Wallet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
 import { getPlanWithMeals } from '@/lib/diet-plans';
@@ -5,6 +6,7 @@ import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk
 import { PlanView } from '@/components/diet-plans/plan-view';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { MetricRow } from '@/components/metrics/types';
 
@@ -65,7 +67,7 @@ export default async function PortalPage() {
         {currentPlan ? (
           <PlanView plan={currentPlan} />
         ) : (
-          <p className="text-sm text-muted-foreground">No active diet plan yet.</p>
+          <EmptyState icon={UtensilsCrossed} title="No active diet plan yet" compact />
         )}
       </div>
 
@@ -77,7 +79,7 @@ export default async function PortalPage() {
       <div>
         <h2 className="mb-3 text-lg font-medium">Upcoming Appointments</h2>
         {!appointments || appointments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No upcoming appointments.</p>
+          <EmptyState icon={CalendarDays} title="No upcoming appointments" compact />
         ) : (
           <Card>
             <CardContent className="space-y-2 pt-4">
@@ -108,8 +110,8 @@ export default async function PortalPage() {
               <TableBody>
                 {(!payments || payments.length === 0) && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      No payments recorded yet.
+                    <TableCell colSpan={4}>
+                      <EmptyState icon={Wallet} title="No payments recorded yet" compact />
                     </TableCell>
                   </TableRow>
                 )}

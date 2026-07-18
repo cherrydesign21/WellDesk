@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import { requireProfile } from '@/lib/auth';
-import { logout } from '@/app/(auth)/actions';
-import { Button } from '@/components/ui/button';
+import { SidebarNav } from '@/components/dashboard/sidebar-nav';
+import { ProfileMenu } from '@/components/dashboard/profile-menu';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await requireProfile();
@@ -18,52 +17,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
           )}
           <div>
             <p className="text-lg font-semibold">{practiceName}</p>
-            <p className="text-sm text-muted-foreground">{profile.full_name}</p>
           </div>
         </div>
-        <nav className="flex flex-1 flex-col gap-1">
-          <Link
-            href="/"
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/clients"
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Clients
-          </Link>
-          <Link
-            href="/diet-plans/templates"
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Diet Plan Templates
-          </Link>
-          <Link
-            href="/payments"
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Payments
-          </Link>
-          <Link
-            href="/appointments"
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Appointments
-          </Link>
-          <Link
-            href="/settings/branding"
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
-          >
-            Branding
-          </Link>
-        </nav>
-        <form action={logout}>
-          <Button type="submit" variant="ghost" className="w-full justify-start">
-            Log out
-          </Button>
-        </form>
+        <SidebarNav />
+        <ProfileMenu fullName={profile.full_name} role={profile.role} avatarUrl={profile.avatar_url} />
       </aside>
       <main className="flex-1 p-6">{children}</main>
     </div>

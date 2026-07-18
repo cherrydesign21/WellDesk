@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DeleteTemplateButton } from '@/components/diet-plans/delete-template-button';
 
@@ -37,8 +39,8 @@ export default async function DietPlanTemplatesPage() {
           <TableBody>
             {(!templates || templates.length === 0) && (
               <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground">
-                  No templates yet.
+                <TableCell colSpan={2}>
+                  <EmptyState icon={UtensilsCrossed} title="No templates yet" description="Create a template to reuse across clients." compact />
                 </TableCell>
               </TableRow>
             )}

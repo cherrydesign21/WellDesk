@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import { Users, CalendarClock, UserX, Wallet, Inbox, type LucideIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { getEffectiveClientStatus, utcIsoToLocalDateKey, utcIsoToLocalTime, type ClientStatus } from '@welldesk/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnimatedCounter } from '@/components/ui/animated-counter';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type Enrollment = { plan_type: string; expiry_date: string; status: string; cycle_number: number };
 type ClientLite = { id: string; full_name: string; status: string; enrollments: Enrollment[] };
@@ -11,12 +14,36 @@ function latestEnrollment(enrollments: Enrollment[]) {
   return [...(enrollments ?? [])].sort((a, b) => b.cycle_number - a.cycle_number)[0];
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+const STAT_TONE_CLASSES = {
+  primary: 'bg-primary/10 text-primary',
+  warning: 'bg-warning/10 text-[color:var(--warning-700)]',
+  danger: 'bg-destructive/10 text-destructive',
+  info: 'bg-info/10 text-[color:var(--info-700)]',
+} as const;
+
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  tone: keyof typeof STAT_TONE_CLASSES;
+}) {
   return (
     <Card>
-      <CardContent className="py-4">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-semibold">{value}</p>
+      <CardContent className="flex items-center gap-4 py-4">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${STAT_TONE_CLASSES[tone]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-2xl font-semibold">
+            <AnimatedCounter value={value} />
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -36,7 +63,7 @@ function AlertList({
       </CardHeader>
       <CardContent className="space-y-2">
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nothing here.</p>
+          <EmptyState icon={Inbox} title="Nothing here" compact />
         ) : (
           items.map((item) => (
             <Link
@@ -143,10 +170,10 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Active clients" value={activeClients.length} />
-        <StatCard label="Expiring in 7 days" value={expiringSoon.length} />
-        <StatCard label="No visit in 14+ days" value={inactiveClients.length} />
-        <StatCard label="Overdue payments" value={overduePayments.length} />
+        <StatCard label="Active clients" value={activeClients.length} icon={Users} tone="primary" />
+        <StatCard label="Expiring in 7 days" value={expiringSoon.length} icon={CalendarClock} tone="warning" />
+        <StatCard label="No visit in 14+ days" value={inactiveClients.length} icon={UserX} tone="info" />
+        <StatCard label="Overdue payments" value={overduePayments.length} icon={Wallet} tone="danger" />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
