@@ -8,12 +8,12 @@ type Summary = {
   payment_status: 'paid' | 'partial' | 'overdue' | 'unpaid';
 };
 
-function statusVariant(status: Summary['payment_status']): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusVariant(status: Summary['payment_status']): 'success' | 'warning' | 'destructive' | 'outline' {
   switch (status) {
     case 'paid':
-      return 'default';
+      return 'success';
     case 'partial':
-      return 'secondary';
+      return 'warning';
     case 'overdue':
       return 'destructive';
     default:

@@ -20,12 +20,12 @@ import { NewAppointmentDialog } from '@/components/appointments/new-appointment-
 import { AppointmentsList, type AppointmentRow } from '@/components/appointments/appointments-list';
 import type { MetricRow } from '@/components/metrics/types';
 
-function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusVariant(status: string): 'success' | 'warning' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
-      return 'default';
+      return 'success';
     case 'paused':
-      return 'secondary';
+      return 'warning';
     case 'expired':
       return 'destructive';
     default:

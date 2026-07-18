@@ -13,12 +13,12 @@ type EnrollmentRow = {
   plan_amount: number;
 };
 
-function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusVariant(status: string): 'success' | 'warning' | 'destructive' | 'outline' {
   switch (status) {
     case 'active':
-      return 'default';
+      return 'success';
     case 'paused':
-      return 'secondary';
+      return 'warning';
     case 'expired':
       return 'destructive';
     default:
