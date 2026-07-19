@@ -12,7 +12,7 @@ export async function getCurrentProfile(supabase: SupabaseClient) {
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'id, full_name, role, avatar_url, practice_id, practices(name, tagline, logo_url, primary_color, font_choice, timezone)'
+      'id, full_name, role, avatar_url, practice_id, is_super_admin, practices(name, tagline, logo_url, primary_color, font_choice, timezone, suspended_at)'
     )
     .eq('id', user.id)
     .single();
@@ -31,6 +31,17 @@ export async function requireProfile() {
   const result = await getCurrentProfile(supabase);
   if (!result) {
     redirect('/login');
+  }
+  if (result.profile.practices?.suspended_at) {
+    redirect('/suspended');
+  }
+  return result;
+}
+
+export async function requireSuperAdmin() {
+  const result = await requireProfile();
+  if (!result.profile.is_super_admin) {
+    redirect('/');
   }
   return result;
 }

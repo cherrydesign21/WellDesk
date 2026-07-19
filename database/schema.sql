@@ -31,6 +31,7 @@ create table practices (
   currency text not null default 'INR',
   timezone text not null default 'Asia/Kolkata',
   owner_user_id uuid not null references auth.users(id) on delete cascade,
+  suspended_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -44,6 +45,9 @@ create table profiles (
   phone text,
   avatar_url text,
   weight_unit_pref weight_unit_pref not null default 'kg',
+  -- platform super-admin (cross-tenant oversight) — only ever set by a
+  -- direct SQL update, no self-service grant path.
+  is_super_admin boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

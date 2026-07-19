@@ -28,7 +28,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <Link href="/" className="text-lg font-semibold tracking-tight">
           WellDesk
         </Link>
-        <ProfileMenu fullName={profile.full_name} role={profile.role} avatarUrl={profile.avatar_url} />
+        <ProfileMenu
+          fullName={profile.full_name}
+          role={profile.role}
+          avatarUrl={profile.avatar_url}
+          isSuperAdmin={profile.is_super_admin}
+        />
       </header>
 
       <div

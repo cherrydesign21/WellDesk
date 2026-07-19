@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Settings, Palette, LogOut, ChevronDown } from 'lucide-react';
+import { Settings, Palette, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
 import { logout } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,10 +16,12 @@ export function ProfileMenu({
   fullName,
   role,
   avatarUrl,
+  isSuperAdmin,
 }: {
   fullName: string;
   role: string;
   avatarUrl?: string | null;
+  isSuperAdmin?: boolean;
 }) {
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
 
@@ -49,6 +51,12 @@ export function ProfileMenu({
           <Palette className="h-4 w-4" />
           Brand Settings
         </DropdownMenuItem>
+        {isSuperAdmin && (
+          <DropdownMenuItem render={<Link href="/admin" />}>
+            <ShieldCheck className="h-4 w-4" />
+            Admin Panel
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <form action={logout}>
           <DropdownMenuItem
