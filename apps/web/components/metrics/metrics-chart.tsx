@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,6 +14,19 @@ import { METRIC_FIELDS, type MetricFieldKey } from '@welldesk/shared';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { MetricRow } from './types';
+
+const FIELD_COLORS = [
+  'var(--primary-500)',
+  'var(--info-500)',
+  'var(--danger-500)',
+  'var(--warning-500)',
+  'var(--success-500)',
+];
+
+function colorForField(key: string) {
+  const index = METRIC_FIELDS.findIndex((f) => f.key === key);
+  return FIELD_COLORS[index % FIELD_COLORS.length];
+}
 
 export function MetricsChart({ rows }: { rows: MetricRow[] }) {
   const availableFields = useMemo(
@@ -26,6 +39,8 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
   if (availableFields.length === 0) return null;
 
   const field = availableFields.find((f) => f.key === selected) ?? availableFields[0];
+  const color = colorForField(field.key);
+  const gradientId = `metric-gradient-${field.key}`;
 
   const data = rows
     .filter((r) => r[field.key as keyof MetricRow] != null)
@@ -53,7 +68,13 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
       </CardHeader>
       <CardContent className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.35} />
+                <stop offset="95%" stopColor={color} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="date" fontSize={12} tickLine={false} />
             <YAxis
@@ -67,8 +88,16 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
             <Tooltip
               formatter={(value) => [`${value}${field.unit ? ` ${field.unit}` : ''}`, field.label]}
             />
-            <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} />
-          </LineChart>
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={color}
+              strokeWidth={2.5}
+              fill={`url(#${gradientId})`}
+              dot={{ r: 3, fill: color, strokeWidth: 0 }}
+              activeDot={{ r: 5 }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>

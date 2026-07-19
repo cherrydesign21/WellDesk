@@ -15,3 +15,21 @@ export const registerSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const accountSettingsSchema = z.object({
+  fullName: z.string().trim().min(2, 'Name must be at least 2 characters').max(120),
+});
+
+export type AccountSettingsInput = z.infer<typeof accountSettingsSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

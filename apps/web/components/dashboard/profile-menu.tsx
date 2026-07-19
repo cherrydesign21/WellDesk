@@ -1,7 +1,16 @@
+'use client';
+
 import Link from 'next/link';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, Palette, LogOut, ChevronDown } from 'lucide-react';
 import { logout } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function ProfileMenu({
   fullName,
@@ -15,8 +24,8 @@ export function ProfileMenu({
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
 
   return (
-    <div className="space-y-2 border-t pt-3">
-      <div className="flex items-center gap-2.5 px-1">
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost" className="h-auto gap-2 px-2 py-1.5" />}>
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
@@ -25,25 +34,32 @@ export function ProfileMenu({
             {initial}
           </div>
         )}
-        <div className="min-w-0">
+        <div className="hidden min-w-0 text-left sm:block">
           <p className="truncate text-sm font-medium">{fullName}</p>
           <p className="truncate text-xs text-muted-foreground capitalize">{role}</p>
         </div>
-      </div>
-      <Button
-        variant="ghost"
-        className="w-full justify-start gap-2.5 text-foreground/70"
-        render={<Link href="/settings/branding" />}
-      >
-        <Settings className="h-4 w-4" />
-        Settings
-      </Button>
-      <form action={logout}>
-        <Button type="submit" variant="ghost" className="w-full justify-start gap-2.5 text-foreground/70">
-          <LogOut className="h-4 w-4" />
-          Log out
-        </Button>
-      </form>
-    </div>
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem render={<Link href="/settings/account" />}>
+          <Settings className="h-4 w-4" />
+          Account Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/settings/branding" />}>
+          <Palette className="h-4 w-4" />
+          Brand Settings
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <form action={logout}>
+          <DropdownMenuItem
+            variant="destructive"
+            render={<button type="submit" className="w-full" />}
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
+          </DropdownMenuItem>
+        </form>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

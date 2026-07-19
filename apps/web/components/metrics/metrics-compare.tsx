@@ -5,6 +5,7 @@ import { METRIC_FIELDS } from '@welldesk/shared';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import type { MetricRow } from './types';
 
 function formatDateTime(iso: string) {
@@ -88,7 +89,17 @@ export function MetricsCompare({ rows }: { rows: MetricRow[] }) {
                     <TableCell>{f.label}</TableCell>
                     <TableCell>{a != null ? `${a}${f.unit ? ` ${f.unit}` : ''}` : '—'}</TableCell>
                     <TableCell>{b != null ? `${b}${f.unit ? ` ${f.unit}` : ''}` : '—'}</TableCell>
-                    <TableCell>{a != null && b != null ? formatDelta(a, b) : '—'}</TableCell>
+                    <TableCell>
+                      {a != null && b != null ? (
+                        b === a ? (
+                          formatDelta(a, b)
+                        ) : (
+                          <Badge variant={b > a ? 'info' : 'warning'}>{formatDelta(a, b)}</Badge>
+                        )
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}

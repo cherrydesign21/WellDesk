@@ -1,3 +1,4 @@
+import { Wallet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -21,12 +22,24 @@ function statusVariant(status: Summary['payment_status']): 'success' | 'warning'
   }
 }
 
+const STATUS_ICON_CLASSES: Record<Summary['payment_status'], string> = {
+  paid: 'bg-success/10 text-(--success-700)',
+  partial: 'bg-warning/10 text-(--warning-700)',
+  overdue: 'bg-destructive/10 text-destructive',
+  unpaid: 'bg-muted text-muted-foreground',
+};
+
 export function PaymentSummary({ summary }: { summary: Summary | null }) {
   if (!summary) return null;
 
   return (
     <Card>
       <CardContent className="flex flex-wrap items-center gap-6 py-4">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${STATUS_ICON_CLASSES[summary.payment_status]}`}
+        >
+          <Wallet className="h-5 w-5" />
+        </div>
         <div>
           <p className="text-xs text-muted-foreground">Plan amount</p>
           <p className="text-lg font-semibold">{summary.plan_amount}</p>

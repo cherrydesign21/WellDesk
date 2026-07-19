@@ -8,7 +8,6 @@ import {
   UtensilsCrossed,
   Wallet,
   CalendarDays,
-  Palette,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -18,7 +17,6 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/diet-plans/templates', label: 'Diet Plan Templates', icon: UtensilsCrossed },
   { href: '/payments', label: 'Payments', icon: Wallet },
   { href: '/appointments', label: 'Appointments', icon: CalendarDays },
-  { href: '/settings/branding', label: 'Branding', icon: Palette },
 ];
 
 export function SidebarNav() {

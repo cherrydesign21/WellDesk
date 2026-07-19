@@ -1,3 +1,4 @@
+import { Target } from 'lucide-react';
 import { calculateIdealWeightKg, type Gender } from '@welldesk/shared';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -18,6 +19,9 @@ export function IdealWeightCard({
   return (
     <Card>
       <CardContent className="flex flex-wrap items-center gap-6 py-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-info/10 text-(--info-700)">
+          <Target className="h-5 w-5" />
+        </div>
         <div>
           <p className="text-xs text-muted-foreground">Ideal weight (Devine formula)</p>
           <p className="text-lg font-semibold">{ideal} kg</p>

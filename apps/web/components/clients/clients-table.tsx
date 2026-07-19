@@ -8,12 +8,12 @@ import { toast } from 'sonner';
 import { PLAN_TYPE_LABELS, PLAN_TYPES, GENDERS, CLIENT_STATUSES } from '@welldesk/shared';
 import { archiveClient, reactivateClient, bulkArchiveClients } from '@/app/(dashboard)/clients/actions';
 import { EditClientDialog, type EditableClient } from './edit-client-dialog';
-import { toCsv, downloadCsv } from '@/lib/csv';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ExportMenu } from '@/components/ui/export-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -76,9 +76,10 @@ function daysUntil(dateStr: string) {
   return Math.ceil((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
-function clientsToCsv(clients: ClientRow[]) {
-  const headers = ['Name', 'Phone', 'Email', 'Gender', 'Status', 'Plan', 'Expiry', 'Join Date', 'Last Visit'];
-  const rows = clients.map((c) => {
+const CLIENT_EXPORT_HEADERS = ['Name', 'Phone', 'Email', 'Gender', 'Status', 'Plan', 'Expiry', 'Join Date', 'Last Visit'];
+
+function clientsToRows(clients: ClientRow[]): string[][] {
+  return clients.map((c) => {
     const enrollment = latestEnrollment(c.enrollments);
     return [
       c.full_name,
@@ -92,7 +93,6 @@ function clientsToCsv(clients: ClientRow[]) {
       c.last_visit ? c.last_visit.slice(0, 10) : '',
     ];
   });
-  return toCsv(headers, rows);
 }
 
 export function ClientsTable({ clients, filters }: { clients: ClientRow[]; filters: ClientsFilters }) {
@@ -162,14 +162,6 @@ export function ClientsTable({ clients, filters }: { clients: ClientRow[]; filte
       toast.success(`${selected.size} client(s) archived`);
       setSelected(new Set());
     });
-  }
-
-  function handleExportAll() {
-    downloadCsv('clients.csv', clientsToCsv(clients));
-  }
-
-  function handleExportSelected() {
-    downloadCsv('clients-selected.csv', clientsToCsv(clients.filter((c) => selected.has(c.id))));
   }
 
   const sort = filters.sort ?? 'joinDate';
@@ -276,18 +268,25 @@ export function ClientsTable({ clients, filters }: { clients: ClientRow[]; filte
           >
             {dir === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={handleExportAll}>
-            Export
-          </Button>
+          <ExportMenu
+            filenameBase="clients"
+            title="Clients"
+            headers={CLIENT_EXPORT_HEADERS}
+            rows={clientsToRows(clients)}
+          />
         </div>
       </div>
 
       {selected.size > 0 && (
         <div className="flex items-center gap-3 rounded-md border bg-muted/40 px-3 py-2 text-sm">
           <span className="font-medium">{selected.size} selected</span>
-          <Button type="button" variant="outline" size="sm" onClick={handleExportSelected}>
-            Export selected
-          </Button>
+          <ExportMenu
+            label="Export selected"
+            filenameBase="clients-selected"
+            title="Clients (selected)"
+            headers={CLIENT_EXPORT_HEADERS}
+            rows={clientsToRows(clients.filter((c) => selected.has(c.id)))}
+          />
           <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={handleBulkArchive}>
             Archive selected
           </Button>

@@ -6,6 +6,7 @@ import { getCurrentProfile } from '@/lib/auth';
 import { calculateBmi, getEffectiveClientStatus, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ExportMenu } from '@/components/ui/export-menu';
 import { LogMetricDialog } from '@/components/metrics/log-metric-dialog';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
@@ -19,6 +20,8 @@ import { PortalAccessCard } from '@/components/clients/portal-access-card';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
 import { AppointmentsList, type AppointmentRow } from '@/components/appointments/appointments-list';
 import type { MetricRow } from '@/components/metrics/types';
+
+const PAYMENT_EXPORT_HEADERS = ['Date', 'Amount', 'Mode', 'Reference'];
 
 function statusVariant(status: string): 'success' | 'warning' | 'destructive' | 'outline' {
   switch (status) {
@@ -147,41 +150,45 @@ export default async function ClientDetailPage({
         </div>
       </div>
 
-      <PortalAccessCard clientId={client.id} hasPortalAccess={!!client.user_id} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <PortalAccessCard clientId={client.id} hasPortalAccess={!!client.user_id} />
+        <PaymentSummary summary={paymentSummary} />
+        <IdealWeightCard
+          heightCm={metricsAccumulated.lastHeight}
+          gender={client.gender}
+          currentWeightKg={latestWeightKg}
+        />
+      </div>
 
       <EnrollmentTimeline clientId={client.id} enrollments={enrollments ?? []} />
 
-      <div>
-        <h2 className="mb-3 text-lg font-medium">Appointments</h2>
-        <AppointmentsList rows={appointmentRows} />
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Payments</h2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              render={<a href={`/api/payments/export?clientId=${client.id}`} />}
-            >
-              Export
-            </Button>
-            <LogPaymentDialog clientId={client.id} />
-          </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div>
+          <h2 className="mb-3 text-lg font-medium">Appointments</h2>
+          <AppointmentsList rows={appointmentRows} />
         </div>
-        <PaymentSummary summary={paymentSummary} />
-        <PaymentsHistoryTable clientId={client.id} rows={payments ?? []} />
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium">Payments</h2>
+            <div className="flex items-center gap-2">
+              <ExportMenu
+                filenameBase={`payments-${client.full_name}`}
+                title={`Payments — ${client.full_name}`}
+                headers={PAYMENT_EXPORT_HEADERS}
+                rows={(payments ?? []).map((p) => [p.payment_date, p.amount, p.mode, p.reference_no ?? '—'])}
+              />
+              <LogPaymentDialog clientId={client.id} />
+            </div>
+          </div>
+          <PaymentsHistoryTable clientId={client.id} rows={payments ?? []} />
+        </div>
       </div>
 
-      <IdealWeightCard
-        heightCm={metricsAccumulated.lastHeight}
-        gender={client.gender}
-        currentWeightKg={latestWeightKg}
-      />
-
-      <MetricsChart rows={rows} />
-      <MetricsCompare rows={rows} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <MetricsChart rows={rows} />
+        <MetricsCompare rows={rows} />
+      </div>
 
       <div>
         <h2 className="mb-3 text-lg font-medium">History</h2>

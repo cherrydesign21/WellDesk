@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react';
 import { toast } from 'sonner';
+import { UserCheck, UserPlus } from 'lucide-react';
 import { inviteClientToPortal, revokeClientPortalAccess } from '@/app/(dashboard)/clients/[clientId]/portal/actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,9 +37,16 @@ export function PortalAccessCard({ clientId, hasPortalAccess }: { clientId: stri
   return (
     <Card>
       <CardContent className="flex flex-wrap items-center gap-4 py-4">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+            hasPortalAccess ? 'bg-success/10 text-(--success-700)' : 'bg-muted text-muted-foreground'
+          }`}
+        >
+          {hasPortalAccess ? <UserCheck className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+        </div>
         <div>
           <p className="text-xs text-muted-foreground">Client Portal</p>
-          <Badge variant={hasPortalAccess ? 'default' : 'outline'} className="mt-1">
+          <Badge variant={hasPortalAccess ? 'success' : 'outline'} className="mt-1">
             {hasPortalAccess ? 'Active' : 'Not invited'}
           </Badge>
         </div>

@@ -3,9 +3,12 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ExportMenu } from '@/components/ui/export-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+const PAYMENT_EXPORT_HEADERS = ['Date', 'Client', 'Amount', 'Mode', 'Reference'];
 
 export default async function PaymentsPage({
   searchParams,
@@ -28,9 +31,13 @@ export default async function PaymentsPage({
   const { data: payments } = await query;
   const total = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
 
-  const exportParams = new URLSearchParams();
-  if (from) exportParams.set('from', from);
-  if (to) exportParams.set('to', to);
+  const exportRows = (payments ?? []).map((p) => [
+    p.payment_date,
+    (p.clients as unknown as { full_name: string } | null)?.full_name ?? '—',
+    p.amount,
+    p.mode,
+    p.reference_no ?? '—',
+  ]);
 
   return (
     <div className="space-y-6">
@@ -39,12 +46,12 @@ export default async function PaymentsPage({
           <h1 className="text-2xl font-semibold">Payments</h1>
           <p className="text-sm text-muted-foreground">{payments?.length ?? 0} payment(s) · total {total}</p>
         </div>
-        <Button
-          variant="outline"
-          render={<a href={`/api/payments/export${exportParams.toString() ? `?${exportParams}` : ''}`} />}
-        >
-          Export
-        </Button>
+        <ExportMenu
+          filenameBase="payments"
+          title="Payments"
+          headers={PAYMENT_EXPORT_HEADERS}
+          rows={exportRows}
+        />
       </div>
 
       <form className="flex flex-wrap items-end gap-3" action="/payments">
