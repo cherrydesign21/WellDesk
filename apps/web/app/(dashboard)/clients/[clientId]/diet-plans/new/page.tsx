@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { getPlanWithMeals } from '@/lib/diet-plans';
 import { NewClientPlanForm } from '@/components/diet-plans/new-client-plan-form';
-import { defaultMeals } from '@/components/diet-plans/plan-builder';
 import type { DietPlanInput } from '@welldesk/shared';
 
 export default async function NewClientDietPlanPage({
@@ -45,7 +44,7 @@ export default async function NewClientDietPlanPage({
       <NewClientPlanForm
         clientId={clientId}
         initialName={initialName}
-        initialMeals={initialMeals ?? defaultMeals()}
+        initialMeals={initialMeals}
         supersedesPlanId={fromPlanId}
       />
     </div>
