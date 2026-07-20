@@ -69,7 +69,13 @@ export async function createClientDietPlan(
   }
 
   if (options?.supersedesPlanId) {
-    await supabase.from('diet_plans').update({ status: 'superseded' }).eq('id', options.supersedesPlanId);
+    const { error: supersedeError } = await supabase
+      .from('diet_plans')
+      .update({ status: 'superseded' })
+      .eq('id', options.supersedesPlanId);
+    if (supersedeError) {
+      return { error: supersedeError.message };
+    }
   }
 
   revalidatePath(`/clients/${clientId}/diet-plans`);

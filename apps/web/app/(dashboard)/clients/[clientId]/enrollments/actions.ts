@@ -101,7 +101,13 @@ export async function restartPlan(clientId: string, values: EnrollmentInput) {
     .maybeSingle();
 
   if (latest && latest.status !== 'expired') {
-    await supabase.from('enrollments').update({ status: 'expired' }).eq('id', latest.id);
+    const { error: expireError } = await supabase
+      .from('enrollments')
+      .update({ status: 'expired' })
+      .eq('id', latest.id);
+    if (expireError) {
+      return { error: expireError.message };
+    }
   }
 
   const expiryDate = calculateExpiryDate(data.startDate, data.planType, data.customDurationDays);
