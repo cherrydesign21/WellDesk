@@ -38,15 +38,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       <div
         className="flex flex-1"
-        style={{ ...(brandVars as React.CSSProperties), fontFamily: font?.stack }}
+        style={{ ...(brandVars as React.CSSProperties), ...(font && { '--font-brand': font.stack }) } as React.CSSProperties}
       >
-        <aside className="hidden w-64 shrink-0 flex-col border-r bg-muted/20 p-4 md:flex">
+        <aside className="hidden w-64 shrink-0 flex-col border-r bg-sidebar p-4 md:flex">
           <div className="mb-6 flex flex-col items-center gap-2 px-2 pt-2 text-center">
             {logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt="" className="h-16 w-16 rounded object-contain" />
             )}
-            <p className="font-semibold">{practiceName}</p>
+            <p className="font-heading font-semibold">{practiceName}</p>
           </div>
           <SidebarNav />
         </aside>

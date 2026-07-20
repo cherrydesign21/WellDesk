@@ -14,11 +14,18 @@ function latestEnrollment(enrollments: Enrollment[]) {
   return [...(enrollments ?? [])].sort((a, b) => b.cycle_number - a.cycle_number)[0];
 }
 
-const STAT_TONE_CLASSES = {
-  primary: 'bg-primary/10 text-primary',
-  warning: 'bg-warning/10 text-[color:var(--warning-700)]',
-  danger: 'bg-destructive/10 text-destructive',
-  info: 'bg-info/10 text-[color:var(--info-700)]',
+const STAT_ICON_CLASSES = {
+  primary: 'bg-primary/15 text-primary',
+  warning: 'bg-warning/15 text-(--warning-700)',
+  danger: 'bg-destructive/15 text-destructive',
+  info: 'bg-info/15 text-(--info-700)',
+} as const;
+
+const STAT_BORDER_CLASSES = {
+  primary: 'border-l-4 border-l-primary',
+  warning: 'border-l-4 border-l-warning',
+  danger: 'border-l-4 border-l-destructive',
+  info: 'border-l-4 border-l-info',
 } as const;
 
 function StatCard({
@@ -30,12 +37,12 @@ function StatCard({
   label: string;
   value: number;
   icon: LucideIcon;
-  tone: keyof typeof STAT_TONE_CLASSES;
+  tone: keyof typeof STAT_ICON_CLASSES;
 }) {
   return (
-    <Card>
+    <Card className={STAT_BORDER_CLASSES[tone]}>
       <CardContent className="flex items-center gap-4 py-4">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${STAT_TONE_CLASSES[tone]}`}>
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${STAT_ICON_CLASSES[tone]}`}>
           <Icon className="h-5 w-5" />
         </div>
         <div>

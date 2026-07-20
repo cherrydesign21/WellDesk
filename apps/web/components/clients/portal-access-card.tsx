@@ -35,32 +35,32 @@ export function PortalAccessCard({ clientId, hasPortalAccess }: { clientId: stri
   }
 
   return (
-    <Card>
-      <CardContent className="flex flex-wrap items-center gap-4 py-4">
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-            hasPortalAccess ? 'bg-success/10 text-(--success-700)' : 'bg-muted text-muted-foreground'
-          }`}
-        >
-          {hasPortalAccess ? <UserCheck className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+    <Card className={hasPortalAccess ? 'border-l-4 border-l-success' : 'border-l-4 border-l-muted-foreground/30'}>
+      <CardContent className="space-y-3 py-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+              hasPortalAccess ? 'bg-success/15 text-(--success-700)' : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {hasPortalAccess ? <UserCheck className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Client Portal</p>
+            <Badge variant={hasPortalAccess ? 'success' : 'outline'} className="mt-1">
+              {hasPortalAccess ? 'Active' : 'Not invited'}
+            </Badge>
+          </div>
         </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Client Portal</p>
-          <Badge variant={hasPortalAccess ? 'success' : 'outline'} className="mt-1">
-            {hasPortalAccess ? 'Active' : 'Not invited'}
-          </Badge>
-        </div>
-        <div className="ml-auto">
-          {hasPortalAccess ? (
-            <Button variant="outline" size="sm" disabled={isPending} onClick={handleRevoke}>
-              Revoke access
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" disabled={isPending} onClick={handleInvite}>
-              Invite to Portal
-            </Button>
-          )}
-        </div>
+        {hasPortalAccess ? (
+          <Button variant="outline" size="sm" className="w-full" disabled={isPending} onClick={handleRevoke}>
+            Revoke access
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" className="w-full" disabled={isPending} onClick={handleInvite}>
+            Invite to Portal
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
