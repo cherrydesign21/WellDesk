@@ -118,7 +118,9 @@ export function LogPaymentDialog({ clientId }: { clientId: string }) {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue />
+                          <SelectValue>
+                            {(value: keyof typeof MODE_LABELS) => MODE_LABELS[value] ?? value}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

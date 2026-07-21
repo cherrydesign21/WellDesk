@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-jost);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-brand, var(--font-sans));
   --color-sidebar-ring: var(--sidebar-ring);
@@ -223,5 +223,19 @@
   }
   h3 {
     @apply font-heading text-xl font-semibold tracking-tight;
+  }
+  /* native <button> defaults to cursor:default, unlike <a> — force pointer
+     on every interactive control app-wide so nothing reads as inert. */
+  button:not(:disabled):not([data-disabled]),
+  [role="button"]:not([data-disabled]):not([aria-disabled="true"]),
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  select:not(:disabled),
+  summary,
+  label[for] {
+    cursor: pointer;
   }
 }

@@ -220,7 +220,9 @@ export function NewClientDialog() {
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue />
+                            <SelectValue>
+                              {(value: keyof typeof PLAN_TYPE_LABELS) => PLAN_TYPE_LABELS[value] ?? value}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

@@ -60,7 +60,7 @@ export function ForgotPasswordForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" variant="brand" className="w-full" disabled={isPending}>
+          <Button type="submit" variant="brand" size="submit" className="w-full" disabled={isPending}>
             {isPending ? 'Sending…' : 'Send Reset Link'}
           </Button>
           <p className="text-center text-sm text-muted-foreground">

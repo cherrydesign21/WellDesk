@@ -74,6 +74,52 @@ export function calculateIdealWeightKg(heightCm: number, gender: Gender | null |
   return Math.round((base + 2.3 * inchesOver5Ft) * 10) / 10;
 }
 
+// A simple, transparent wellness heuristic (not a medical score) — starts
+// at a neutral baseline and nudges up/down per vital sign in healthy range
+// plus whether the latest weight moved toward the client's stated target.
+// Returns null when there isn't enough data yet to say anything.
+export function calculateHealthScore(input: {
+  latest: {
+    systolicBp?: number | null;
+    diastolicBp?: number | null;
+    bloodSugarFasting?: number | null;
+    weightKg?: number | null;
+  } | null;
+  previousWeightKg?: number | null;
+  targetWeightKg?: number | null;
+}): number | null {
+  if (!input.latest) return null;
+  let score = 70;
+  let scored = false;
+  const { systolicBp, diastolicBp, bloodSugarFasting, weightKg } = input.latest;
+
+  if (systolicBp != null && diastolicBp != null) {
+    scored = true;
+    score += systolicBp < 130 && diastolicBp < 85 ? 10 : -10;
+  }
+  if (bloodSugarFasting != null) {
+    scored = true;
+    score += bloodSugarFasting < 100 ? 10 : -10;
+  }
+  if (weightKg != null && input.targetWeightKg != null && input.previousWeightKg != null) {
+    scored = true;
+    const distBefore = Math.abs(input.previousWeightKg - input.targetWeightKg);
+    const distAfter = Math.abs(weightKg - input.targetWeightKg);
+    if (distAfter < distBefore) score += 10;
+    else if (distAfter > distBefore) score -= 10;
+  }
+
+  if (!scored) return null;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+export function healthScoreLabel(score: number): string {
+  if (score >= 85) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
+  return 'Needs attention';
+}
+
 export function calculateExpiryDate(startDate: string, planType: PlanType, customDurationDays?: number): string {
   const days = planType === 'custom' ? customDurationDays ?? 0 : PLAN_TYPE_DAYS[planType] ?? 0;
   const start = new Date(startDate);

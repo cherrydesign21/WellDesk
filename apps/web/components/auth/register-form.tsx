@@ -102,7 +102,7 @@ export function RegisterForm() {
           />
           {formError && <p className="text-sm text-destructive">{formError}</p>}
           {formMessage && <p className="text-sm text-emerald-600">{formMessage}</p>}
-          <Button type="submit" variant="brand" className="w-full" disabled={isPending}>
+          <Button type="submit" variant="brand" size="submit" className="w-full" disabled={isPending}>
             {isPending ? 'Creating account…' : 'Sign Up'}
           </Button>
           <hr className="border-border" />

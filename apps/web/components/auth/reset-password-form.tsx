@@ -61,7 +61,7 @@ export function ResetPasswordForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" variant="brand" className="w-full" disabled={isPending}>
+          <Button type="submit" variant="brand" size="submit" className="w-full" disabled={isPending}>
             {isPending ? 'Saving…' : 'Update password'}
           </Button>
         </form>

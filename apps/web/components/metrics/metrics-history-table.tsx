@@ -1,16 +1,17 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Trash2, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { deleteHealthMetric } from '@/app/(dashboard)/clients/[clientId]/actions';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ExportMenu } from '@/components/ui/export-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { MetricRow } from './types';
 
 const METRICS_EXPORT_HEADERS = ['Date', 'Weight', 'BMI', 'BP', 'Sugar (Fasting)', 'Sugar (Post-meal)', 'Notes'];
+const COLLAPSED_COUNT = 3;
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -21,6 +22,7 @@ function formatDateTime(iso: string) {
 
 export function MetricsHistoryTable({ clientId, rows }: { clientId: string; rows: MetricRow[] }) {
   const [isPending, startTransition] = useTransition();
+  const [expanded, setExpanded] = useState(false);
 
   function handleDelete(id: string) {
     if (!window.confirm('Delete this entry? This cannot be undone.')) return;
@@ -36,6 +38,7 @@ export function MetricsHistoryTable({ clientId, rows }: { clientId: string; rows
   }
 
   const sorted = [...rows].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at));
+  const visible = expanded ? sorted : sorted.slice(0, COLLAPSED_COUNT);
 
   const exportRows = sorted.map((row) => [
     formatDateTime(row.recorded_at),
@@ -52,47 +55,37 @@ export function MetricsHistoryTable({ clientId, rows }: { clientId: string; rows
       <div className="flex justify-end">
         <ExportMenu filenameBase="metrics-history" title="Metrics History" headers={METRICS_EXPORT_HEADERS} rows={exportRows} />
       </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Weight</TableHead>
-              <TableHead>BMI</TableHead>
-              <TableHead>BP</TableHead>
-              <TableHead>Sugar (F / PM)</TableHead>
-              <TableHead>Notes</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sorted.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="whitespace-nowrap">{formatDateTime(row.recorded_at)}</TableCell>
-                <TableCell>{row.weight_kg ?? '—'}</TableCell>
-                <TableCell>{row.bmi ?? '—'}</TableCell>
-                <TableCell>
-                  {row.systolic_bp && row.diastolic_bp ? `${row.systolic_bp}/${row.diastolic_bp}` : '—'}
-                </TableCell>
-                <TableCell>
-                  {row.blood_sugar_fasting ?? '—'} / {row.blood_sugar_post_meal ?? '—'}
-                </TableCell>
-                <TableCell className="max-w-[200px] truncate text-muted-foreground">{row.notes}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isPending}
-                    onClick={() => handleDelete(row.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="divide-y rounded-md border">
+        {visible.map((row) => (
+          <div key={row.id} className="flex items-start justify-between gap-3 p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium whitespace-nowrap">{formatDateTime(row.recorded_at)}</p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {row.weight_kg != null && <Badge variant="outline">{row.weight_kg} kg</Badge>}
+                {row.bmi != null && <Badge variant="outline">{row.bmi} BMI</Badge>}
+                {row.systolic_bp != null && row.diastolic_bp != null && (
+                  <Badge variant="outline">
+                    {row.systolic_bp}/{row.diastolic_bp} BP
+                  </Badge>
+                )}
+              </div>
+              {row.notes && <p className="mt-1.5 truncate text-xs text-muted-foreground">{row.notes}</p>}
+            </div>
+            <Button variant="ghost" size="icon" disabled={isPending} onClick={() => handleDelete(row.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
       </div>
+      {sorted.length > COLLAPSED_COUNT && (
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          {expanded ? 'Show less' : `View All History (${sorted.length}) →`}
+        </button>
+      )}
     </div>
   );
 }

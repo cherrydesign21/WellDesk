@@ -103,7 +103,9 @@ export function BrandingForm({
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue />
+                        <SelectValue>
+                          {(value: string) => CURATED_FONTS.find((f) => f.id === value)?.label ?? value}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
