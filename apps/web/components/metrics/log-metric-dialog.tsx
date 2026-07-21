@@ -103,9 +103,8 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
               name="recordedAt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date &amp; time</FormLabel>
                   <FormControl>
-                    <Input type="datetime-local" {...field} />
+                    <Input label="Date &amp; time" type="datetime-local" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -118,8 +117,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="systolicBp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Systolic BP</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', placeholder: 'mmHg' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', label: 'Systolic BP (mmHg)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -129,8 +127,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="diastolicBp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Diastolic BP</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', placeholder: 'mmHg' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', label: 'Diastolic BP (mmHg)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -143,8 +140,9 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="bloodSugarFasting"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Blood sugar (fasting)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1', placeholder: 'mg/dL' })}</FormControl>
+                    <FormControl>
+                      {numberField(field, { type: 'number', step: '0.1', label: 'Blood sugar, fasting (mg/dL)' })}
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -154,8 +152,9 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="bloodSugarPostMeal"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Blood sugar (post-meal)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1', placeholder: 'mg/dL' })}</FormControl>
+                    <FormControl>
+                      {numberField(field, { type: 'number', step: '0.1', label: 'Blood sugar, post-meal (mg/dL)' })}
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -168,8 +167,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="weightKg"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight (kg)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Weight (kg)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -179,8 +177,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="heightCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Height (cm)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Height (cm)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -199,8 +196,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="waistCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Waist (cm)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Waist (cm)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -210,8 +206,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="chestCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Chest (cm)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Chest (cm)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -221,8 +216,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="hipsCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hips (cm)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Hips (cm)' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -235,8 +229,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="bodyFatPct"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Body fat %</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Body fat %' })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -246,8 +239,9 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="targetWeightKg"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Target weight (kg)</FormLabel>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1' })}</FormControl>
+                    <FormControl>
+                      {numberField(field, { type: 'number', step: '0.1', label: 'Target weight (kg)' })}
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

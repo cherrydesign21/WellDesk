@@ -58,9 +58,8 @@ export function BrandingForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business name</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input label="Business name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -71,9 +70,8 @@ export function BrandingForm({
             name="tagline"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tagline</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ''} />
+                  <Input label="Tagline" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

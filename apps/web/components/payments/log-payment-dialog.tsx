@@ -77,9 +77,9 @@ export function LogPaymentDialog({ clientId }: { clientId: string }) {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount</FormLabel>
                     <FormControl>
                       <Input
+                        label="Amount"
                         type="number"
                         min={0}
                         step="0.01"
@@ -99,9 +99,8 @@ export function LogPaymentDialog({ clientId }: { clientId: string }) {
                 name="paymentDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input label="Date" type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -139,9 +138,8 @@ export function LogPaymentDialog({ clientId }: { clientId: string }) {
                 name="referenceNo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Reference no.</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value ?? ''} />
+                      <Input label="Reference no." {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

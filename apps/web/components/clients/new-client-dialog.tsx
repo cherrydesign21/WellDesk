@@ -123,9 +123,8 @@ export function NewClientDialog() {
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input label="Full name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,9 +136,8 @@ export function NewClientDialog() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value ?? ''} />
+                      <Input label="Phone" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,9 +148,8 @@ export function NewClientDialog() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" {...field} value={field.value ?? ''} />
+                      <Input label="Email" type="email" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -165,9 +162,8 @@ export function NewClientDialog() {
                 name="dob"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date of birth</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} value={field.value ?? ''} />
+                      <Input label="Date of birth" type="date" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -244,9 +240,8 @@ export function NewClientDialog() {
                   name="startDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Start date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input label="Start date" type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -260,9 +255,9 @@ export function NewClientDialog() {
                     name="customDurationDays"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Duration (days)</FormLabel>
                         <FormControl>
                           <Input
+                            label="Duration (days)"
                             type="number"
                             min={1}
                             name={field.name}
@@ -284,9 +279,9 @@ export function NewClientDialog() {
                   name="planAmount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Plan amount</FormLabel>
                       <FormControl>
                         <Input
+                          label="Plan amount"
                           type="number"
                           min={0}
                           step="0.01"

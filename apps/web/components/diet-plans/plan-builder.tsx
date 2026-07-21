@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 function todayForInput() {
   return new Date().toISOString().slice(0, 10);
@@ -182,9 +182,8 @@ export function PlanBuilder({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{mode === 'template' ? 'Template name' : 'Plan name'}</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input label={mode === 'template' ? 'Template name' : 'Plan name'} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,9 +195,8 @@ export function PlanBuilder({
               name="planDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input label="Date" type="date" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

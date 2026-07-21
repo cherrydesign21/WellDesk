@@ -14,7 +14,7 @@ import { updateAccountSettings, changePassword } from '@/app/(dashboard)/setting
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 export function AccountSettingsForm({ fullName, email }: { fullName: string; email: string }) {
   const [isPending, startTransition] = useTransition();
@@ -63,17 +63,15 @@ export function AccountSettingsForm({ fullName, email }: { fullName: string; ema
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(submitProfile)} className="space-y-4">
               <FormItem>
-                <FormLabel>Email</FormLabel>
-                <Input value={email} disabled />
+                <Input label="Email" value={email} disabled />
               </FormItem>
               <FormField
                 control={profileForm.control}
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full name</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input label="Full name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,9 +97,8 @@ export function AccountSettingsForm({ fullName, email }: { fullName: string; ema
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input label="New password" type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -112,9 +109,8 @@ export function AccountSettingsForm({ fullName, email }: { fullName: string; ema
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm new password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input label="Confirm new password" type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

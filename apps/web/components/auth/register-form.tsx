@@ -16,14 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 export function RegisterForm() {
   const [isPending, startTransition] = useTransition();
@@ -62,9 +55,8 @@ export function RegisterForm() {
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your name</FormLabel>
                   <FormControl>
-                    <Input autoComplete="name" {...field} />
+                    <Input label="Your name" autoComplete="name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -75,9 +67,8 @@ export function RegisterForm() {
               name="practiceName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Practice name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Sunrise Nutrition Clinic" {...field} />
+                    <Input label="Practice name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -88,9 +79,8 @@ export function RegisterForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" autoComplete="email" {...field} />
+                    <Input label="Email" type="email" autoComplete="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -101,9 +91,8 @@ export function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" autoComplete="new-password" {...field} />
+                    <Input label="Password" type="password" autoComplete="new-password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

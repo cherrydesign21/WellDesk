@@ -107,9 +107,8 @@ export function NewAppointmentDialog({
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input label="Date" type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -120,9 +119,8 @@ export function NewAppointmentDialog({
                 name="time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input label="Time" type="time" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,9 +132,9 @@ export function NewAppointmentDialog({
               name="durationMinutes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Duration (minutes)</FormLabel>
                   <FormControl>
                     <Input
+                      label="Duration (minutes)"
                       type="number"
                       min={5}
                       step={5}

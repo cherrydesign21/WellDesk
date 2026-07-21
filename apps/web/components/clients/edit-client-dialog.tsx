@@ -109,9 +109,8 @@ export function EditClientDialog({
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input label="Full name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,9 +122,8 @@ export function EditClientDialog({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input {...field} value={field.value ?? ''} />
+                      <Input label="Phone" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -136,9 +134,8 @@ export function EditClientDialog({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" {...field} value={field.value ?? ''} />
+                      <Input label="Email" type="email" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -151,9 +148,8 @@ export function EditClientDialog({
                 name="dob"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date of birth</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} value={field.value ?? ''} />
+                      <Input label="Date of birth" type="date" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

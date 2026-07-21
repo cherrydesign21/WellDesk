@@ -92,9 +92,8 @@ export function RestartPlanDialog({ clientId }: { clientId: string }) {
                 name="startDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input label="Start date" type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -109,9 +108,9 @@ export function RestartPlanDialog({ clientId }: { clientId: string }) {
                   name="customDurationDays"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Duration (days)</FormLabel>
                       <FormControl>
                         <Input
+                          label="Duration (days)"
                           type="number"
                           min={1}
                           name={field.name}
@@ -133,9 +132,9 @@ export function RestartPlanDialog({ clientId }: { clientId: string }) {
                 name="planAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Plan amount</FormLabel>
                     <FormControl>
                       <Input
+                        label="Plan amount"
                         type="number"
                         min={0}
                         step="0.01"
