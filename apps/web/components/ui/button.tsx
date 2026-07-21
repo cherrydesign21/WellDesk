@@ -19,6 +19,10 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // WellDesk's own fixed brand identity (marketing/auth pages only —
+        // not the per-practice dynamic --primary used inside the dashboard).
+        brand:
+          "bg-[#454E17] text-white hover:bg-[#A3B73A] hover:text-[#454E17] hover:shadow-md active:bg-[#A3B73A] active:text-[#454E17] active:ring-3 active:ring-[#A3B73A]/30",
       },
       size: {
         default:

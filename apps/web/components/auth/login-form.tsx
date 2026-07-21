@@ -8,14 +8,6 @@ import { loginSchema, type LoginInput } from '@welldesk/shared';
 import { login } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 export function LoginForm() {
@@ -38,26 +30,23 @@ export function LoginForm() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Log in</CardTitle>
-        <CardDescription>Sign in to your WellDesk dashboard.</CardDescription>
-      </CardHeader>
+    <div>
+      <h1 className="mb-6 text-center text-2xl font-bold">Login</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input label="Email" type="email" autoComplete="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input label="Email" type="email" autoComplete="email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div>
             <FormField
               control={form.control}
               name="password"
@@ -70,21 +59,25 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            {formError && <p className="text-sm text-destructive">{formError}</p>}
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? 'Logging in…' : 'Log in'}
-            </Button>
-            <p className="text-sm text-muted-foreground">
-              No account?{' '}
-              <Link href="/register" className="underline underline-offset-4">
-                Create one
+            <div className="mt-2 text-right">
+              <Link href="/forgot-password" className="text-sm text-[#A3B73A] hover:underline">
+                Forgot Password
               </Link>
-            </p>
-          </CardFooter>
+            </div>
+          </div>
+          {formError && <p className="text-sm text-destructive">{formError}</p>}
+          <Button type="submit" variant="brand" className="w-full" disabled={isPending}>
+            {isPending ? 'Logging in…' : 'Sign In'}
+          </Button>
+          <hr className="border-border" />
+          <p className="text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-medium text-[#A3B73A] hover:underline">
+              Sign Up now
+            </Link>
+          </p>
         </form>
       </Form>
-    </Card>
+    </div>
   );
 }
