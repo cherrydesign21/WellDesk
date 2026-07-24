@@ -14,6 +14,7 @@ import {
 import { createClientWithEnrollment } from '@/app/(dashboard)/clients/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AvatarUploader } from '@/components/ui/avatar-uploader';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -42,7 +43,15 @@ import {
 
 const today = new Date().toISOString().slice(0, 10);
 
-export function NewClientDialog() {
+export function NewClientDialog({
+  practiceId,
+  trigger,
+  triggerLabel = 'Add Client',
+}: {
+  practiceId: string;
+  trigger?: React.ReactElement;
+  triggerLabel?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [duplicate, setDuplicate] = useState<{ id: string; full_name: string } | null>(null);
@@ -57,6 +66,7 @@ export function NewClientDialog() {
       email: '',
       address: '',
       notes: '',
+      photoUrl: null,
       planType: '1_month',
       customDurationDays: undefined,
       startDate: today,
@@ -110,7 +120,7 @@ export function NewClientDialog() {
         }
       }}
     >
-      <DialogTrigger render={<Button />}>Add Client</DialogTrigger>
+      <DialogTrigger render={trigger ?? <Button />}>{triggerLabel}</DialogTrigger>
       <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add client</DialogTitle>
@@ -118,6 +128,12 @@ export function NewClientDialog() {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+            <AvatarUploader
+              practiceId={practiceId}
+              pathPrefix="client-new"
+              initialUrl={null}
+              onUploaded={(url) => form.setValue('photoUrl', url)}
+            />
             <FormField
               control={form.control}
               name="fullName"

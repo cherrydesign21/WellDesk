@@ -11,6 +11,25 @@ import {
   type ClientInput,
 } from '@welldesk/shared';
 
+export async function searchClients(query: string) {
+  const term = query.trim().replace(/[%,]/g, '');
+  if (term.length < 2) return [];
+
+  const supabase = await createSupabaseClient();
+  const result = await getCurrentProfile(supabase);
+  if (!result) return [];
+
+  const { data } = await supabase
+    .from('clients')
+    .select('id, full_name, phone, email, photo_url')
+    .neq('status', 'archived')
+    .or(`full_name.ilike.%${term}%,phone.ilike.%${term}%,email.ilike.%${term}%`)
+    .order('full_name')
+    .limit(8);
+
+  return data ?? [];
+}
+
 export async function createClientWithEnrollment(values: CreateClientInput) {
   const parsed = createClientSchema.safeParse(values);
   if (!parsed.success) {
@@ -54,6 +73,7 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
       email: data.email || null,
       address: data.address || null,
       notes: data.notes || null,
+      photo_url: data.photoUrl || null,
       created_by: profile.id,
     })
     .select('id')
@@ -108,6 +128,7 @@ export async function updateClient(clientId: string, values: ClientInput) {
       email: data.email || null,
       address: data.address || null,
       notes: data.notes || null,
+      photo_url: data.photoUrl || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', clientId);

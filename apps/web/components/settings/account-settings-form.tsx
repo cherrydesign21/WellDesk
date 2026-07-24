@@ -10,15 +10,37 @@ import {
   type AccountSettingsInput,
   type ChangePasswordInput,
 } from '@welldesk/shared';
-import { updateAccountSettings, changePassword } from '@/app/(dashboard)/settings/account/actions';
+import { updateAccountSettings, changePassword, updateAvatarUrl } from '@/app/(dashboard)/settings/account/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AvatarUploader } from '@/components/ui/avatar-uploader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
-export function AccountSettingsForm({ fullName, email }: { fullName: string; email: string }) {
+export function AccountSettingsForm({
+  fullName,
+  email,
+  avatarUrl,
+  practiceId,
+}: {
+  fullName: string;
+  email: string;
+  avatarUrl?: string | null;
+  practiceId: string;
+}) {
   const [isPending, startTransition] = useTransition();
   const [isChangingPassword, startPasswordTransition] = useTransition();
+
+  function handleAvatarUploaded(url: string | null) {
+    startTransition(async () => {
+      const result = await updateAvatarUrl(url);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(url ? 'Photo updated' : 'Photo removed');
+    });
+  }
 
   const profileForm = useForm<AccountSettingsInput>({
     resolver: zodResolver(accountSettingsSchema),
@@ -60,6 +82,14 @@ export function AccountSettingsForm({ fullName, email }: { fullName: string; ema
           <CardTitle className="text-base">Profile</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            <AvatarUploader
+              practiceId={practiceId}
+              pathPrefix="avatar"
+              initialUrl={avatarUrl}
+              onUploaded={handleAvatarUploaded}
+            />
+          </div>
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(submitProfile)} className="space-y-4">
               <FormItem>

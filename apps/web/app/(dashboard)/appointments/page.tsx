@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { zonedTimeToUtcIso, utcIsoToLocalDateKey, utcIsoToLocalTime, type AppointmentStatus } from '@welldesk/shared';
+import {
+  zonedTimeToUtcIso,
+  utcIsoToLocalDateKey,
+  utcIsoToLocalTime,
+  type AppointmentStatus,
+  type AppointmentMode,
+} from '@welldesk/shared';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
 import { AppointmentsList, type AppointmentRow } from '@/components/appointments/appointments-list';
 import { Button } from '@/components/ui/button';
@@ -69,7 +75,7 @@ export default async function AppointmentsPage({
 
   const { data: appointments } = await supabase
     .from('appointments')
-    .select('id, client_id, starts_at, status, notes, clients(full_name)')
+    .select('id, client_id, starts_at, status, notes, mode, clients(full_name)')
     .gte('starts_at', rangeStart)
     .lte('starts_at', rangeEnd)
     .order('starts_at', { ascending: true });
@@ -86,6 +92,7 @@ export default async function AppointmentsPage({
     starts_at: string;
     status: AppointmentStatus;
     notes: string | null;
+    mode: AppointmentMode;
     clients: { full_name: string } | { full_name: string }[] | null;
   };
 
@@ -99,6 +106,7 @@ export default async function AppointmentsPage({
       local_time: utcIsoToLocalTime(a.starts_at, timezone),
       status: a.status,
       notes: a.notes,
+      mode: a.mode,
     };
   });
 

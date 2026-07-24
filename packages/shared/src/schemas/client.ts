@@ -15,6 +15,7 @@ export const clientSchema = z.object({
   email: z.string().trim().email('Enter a valid email').optional().or(z.literal('')).nullable(),
   address: z.string().trim().max(500).optional().nullable(),
   notes: z.string().trim().max(2000).optional().nullable(),
+  photoUrl: z.string().url().optional().nullable(),
 });
 
 export type ClientInput = z.infer<typeof clientSchema>;

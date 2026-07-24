@@ -183,6 +183,15 @@ export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
   no_show: 'No-show',
 };
 
+export const APPOINTMENT_MODES = ['video', 'in_person', 'phone'] as const;
+export type AppointmentMode = (typeof APPOINTMENT_MODES)[number];
+
+export const APPOINTMENT_MODE_LABELS: Record<AppointmentMode, string> = {
+  video: 'Video Call',
+  in_person: 'In Person',
+  phone: 'Phone Call',
+};
+
 // Converts a wall-clock date+time as entered in a given IANA timezone (e.g.
 // the practice's configured timezone) into the correct UTC instant. Needed
 // because the server (Vercel, UTC) must not interpret "9:00 AM" as 9:00 UTC.

@@ -35,6 +35,26 @@ export async function updateAccountSettings(values: AccountSettingsInput) {
   return { success: true };
 }
 
+export async function updateAvatarUrl(avatarUrl: string | null) {
+  const supabase = await createSupabaseClient();
+  const result = await getCurrentProfile(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_url: avatarUrl })
+    .eq('id', result.profile.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/', 'layout');
+  return { success: true };
+}
+
 export async function changePassword(values: ChangePasswordInput) {
   const parsed = changePasswordSchema.safeParse(values);
   if (!parsed.success) {

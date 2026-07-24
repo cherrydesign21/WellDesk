@@ -1,14 +1,29 @@
-import Link from 'next/link';
-import { Users, CalendarClock, UserX, Wallet, Inbox, type LucideIcon } from 'lucide-react';
+import { Users, CalendarClock, Wallet, PackageOpen, type LucideIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { getEffectiveClientStatus, utcIsoToLocalDateKey, utcIsoToLocalTime, type ClientStatus } from '@welldesk/shared';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  getEffectiveClientStatus,
+  utcIsoToLocalDateKey,
+  utcIsoToLocalTime,
+  PLAN_TYPE_LABELS,
+  type ClientStatus,
+  type AppointmentMode,
+} from '@welldesk/shared';
+import { Card, CardContent } from '@/components/ui/card';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
-import { EmptyState } from '@/components/ui/empty-state';
+import { TodaysSchedule, type ScheduleItem } from '@/components/dashboard/todays-schedule';
+import { NeedsAttention, type AttentionItem } from '@/components/dashboard/needs-attention';
+import { ClientProgressTable, type ProgressRow } from '@/components/dashboard/client-progress-table';
+import { QuickActionsRow } from '@/components/dashboard/quick-actions';
 
 type Enrollment = { plan_type: string; expiry_date: string; status: string; cycle_number: number };
-type ClientLite = { id: string; full_name: string; status: string; enrollments: Enrollment[] };
+type ClientLite = {
+  id: string;
+  full_name: string;
+  status: string;
+  photo_url: string | null;
+  enrollments: Enrollment[];
+};
 
 function latestEnrollment(enrollments: Enrollment[]) {
   return [...(enrollments ?? [])].sort((a, b) => b.cycle_number - a.cycle_number)[0];
@@ -17,14 +32,14 @@ function latestEnrollment(enrollments: Enrollment[]) {
 const STAT_ICON_CLASSES = {
   primary: 'bg-primary/15 text-primary',
   warning: 'bg-warning/15 text-(--warning-700)',
-  danger: 'bg-destructive/15 text-destructive',
+  success: 'bg-success/15 text-(--success-700)',
   info: 'bg-info/15 text-(--info-700)',
 } as const;
 
 const STAT_BORDER_CLASSES = {
   primary: 'border-l-4 border-l-primary',
   warning: 'border-l-4 border-l-warning',
-  danger: 'border-l-4 border-l-destructive',
+  success: 'border-l-4 border-l-success',
   info: 'border-l-4 border-l-info',
 } as const;
 
@@ -33,11 +48,13 @@ function StatCard({
   value,
   icon: Icon,
   tone,
+  prefix,
 }: {
   label: string;
   value: number;
   icon: LucideIcon;
   tone: keyof typeof STAT_ICON_CLASSES;
+  prefix?: string;
 }) {
   return (
     <Card className={STAT_BORDER_CLASSES[tone]}>
@@ -48,41 +65,10 @@ function StatCard({
         <div>
           <p className="text-xs text-muted-foreground">{label}</p>
           <p className="text-2xl font-semibold">
+            {prefix}
             <AnimatedCounter value={value} />
           </p>
         </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function AlertList({
-  title,
-  items,
-}: {
-  title: string;
-  items: { id: string; label: string; sub: string }[];
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {items.length === 0 ? (
-          <EmptyState icon={Inbox} title="Nothing here" compact />
-        ) : (
-          items.map((item) => (
-            <Link
-              key={item.id}
-              href={`/clients/${item.id}`}
-              className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted"
-            >
-              <span className="font-medium">{item.label}</span>
-              <span className="text-muted-foreground">{item.sub}</span>
-            </Link>
-          ))
-        )}
       </CardContent>
     </Card>
   );
@@ -93,22 +79,25 @@ export default async function DashboardPage() {
   const result = await getCurrentProfile(supabase);
   if (!result) return null;
 
+  const firstName = result.profile.full_name.trim().split(/\s+/)[0] ?? '';
+  const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
+
   const { data: clientsRaw } = await supabase
     .from('clients')
-    .select('id, full_name, status, enrollments(plan_type, expiry_date, status, cycle_number)');
+    .select('id, full_name, status, photo_url, enrollments(plan_type, expiry_date, status, cycle_number)');
 
   const clients = (clientsRaw ?? []) as ClientLite[];
 
-  const { data: recentMetrics } = await supabase
+  const { data: metricsRaw } = await supabase
     .from('health_metrics')
-    .select('client_id, recorded_at')
+    .select('client_id, recorded_at, weight_kg')
     .order('recorded_at', { ascending: false });
 
-  const lastVisitByClient = new Map<string, string>();
-  for (const m of recentMetrics ?? []) {
-    if (!lastVisitByClient.has(m.client_id)) {
-      lastVisitByClient.set(m.client_id, m.recorded_at);
-    }
+  const metricsByClient = new Map<string, { recorded_at: string; weight_kg: number | null }[]>();
+  for (const m of metricsRaw ?? []) {
+    const list = metricsByClient.get(m.client_id) ?? [];
+    if (list.length < 2) list.push(m);
+    metricsByClient.set(m.client_id, list);
   }
 
   const activeClients = clients.filter(
@@ -124,14 +113,14 @@ export default async function DashboardPage() {
     return enrollment && enrollment.status === 'active' && enrollment.expiry_date <= in7DaysStr;
   });
 
-  const inactiveCutoff = new Date();
-  inactiveCutoff.setDate(inactiveCutoff.getDate() - 14);
-  const inactiveCutoffIso = inactiveCutoff.toISOString();
-
-  const inactiveClients = activeClients.filter((c) => {
-    const lastVisit = lastVisitByClient.get(c.id);
-    return !lastVisit || lastVisit < inactiveCutoffIso;
-  });
+  const now = new Date();
+  const nowMs = now.getTime();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const { data: monthPayments } = await supabase
+    .from('payments')
+    .select('amount')
+    .gte('payment_date', firstOfMonth);
+  const revenueThisMonth = (monthPayments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
 
   const { data: overdueRows } = await supabase
     .from('v_enrollment_payment_status')
@@ -139,18 +128,12 @@ export default async function DashboardPage() {
     .eq('payment_status', 'overdue');
 
   const clientNameById = new Map(clients.map((c) => [c.id, c.full_name]));
-  const overduePayments = (overdueRows ?? []).map((r) => ({
-    id: r.client_id as string,
-    label: clientNameById.get(r.client_id as string) ?? 'Unknown',
-    sub: `Due ${r.amount_due}`,
-  }));
 
-  const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
   const todayLocalKey = utcIsoToLocalDateKey(new Date().toISOString(), timezone);
 
   const { data: upcomingAppointments } = await supabase
     .from('appointments')
-    .select('id, client_id, starts_at, clients(full_name)')
+    .select('id, client_id, starts_at, notes, mode, clients(full_name)')
     .eq('status', 'scheduled')
     .order('starts_at', { ascending: true });
 
@@ -158,51 +141,123 @@ export default async function DashboardPage() {
     id: string;
     client_id: string;
     starts_at: string;
+    notes: string | null;
+    mode: AppointmentMode;
     clients: { full_name: string } | { full_name: string }[] | null;
   };
 
-  const todaysAppointments = ((upcomingAppointments ?? []) as AppointmentJoined[])
+  const todaysAppointments: ScheduleItem[] = ((upcomingAppointments ?? []) as AppointmentJoined[])
     .filter((a) => utcIsoToLocalDateKey(a.starts_at, timezone) === todayLocalKey)
     .map((a) => {
       const clientRel = Array.isArray(a.clients) ? a.clients[0] : a.clients;
       return {
-        id: a.client_id,
-        label: clientRel?.full_name ?? 'Unknown',
-        sub: utcIsoToLocalTime(a.starts_at, timezone),
+        id: a.id,
+        clientId: a.client_id,
+        clientName: clientRel?.full_name ?? 'Unknown',
+        time: utcIsoToLocalTime(a.starts_at, timezone),
+        purpose: a.notes ?? '',
+        mode: a.mode,
       };
     });
 
+  // Needs Attention: merge expiring plans, stale check-ins, and overdue
+  // payments into one urgency-sorted feed (expiring first, then overdue,
+  // then inactivity — roughly time-to-impact order).
+  const attentionItems: AttentionItem[] = [];
+
+  for (const c of expiringSoon) {
+    const enrollment = latestEnrollment(c.enrollments);
+    attentionItems.push({
+      id: `expiring-${c.id}`,
+      clientId: c.id,
+      clientName: c.full_name,
+      reason: `Plan expires ${enrollment?.expiry_date}`,
+      kind: 'expiring',
+    });
+  }
+
+  for (const row of overdueRows ?? []) {
+    attentionItems.push({
+      id: `overdue-${row.client_id}`,
+      clientId: row.client_id,
+      clientName: clientNameById.get(row.client_id) ?? 'Unknown',
+      reason: `Payment of ₹${Number(row.amount_due).toLocaleString('en-IN')} overdue`,
+      kind: 'overdue',
+    });
+  }
+
+  const inactiveCutoff = new Date();
+  inactiveCutoff.setDate(inactiveCutoff.getDate() - 14);
+  const inactiveCutoffIso = inactiveCutoff.toISOString();
+
+  for (const c of activeClients) {
+    const lastVisit = metricsByClient.get(c.id)?.[0]?.recorded_at;
+    if (!lastVisit || lastVisit < inactiveCutoffIso) {
+      const days = lastVisit ? Math.floor((nowMs - new Date(lastVisit).getTime()) / 86400000) : null;
+      attentionItems.push({
+        id: `inactive-${c.id}`,
+        clientId: c.id,
+        clientName: c.full_name,
+        reason: days !== null ? `No check-in for ${days} days` : 'Never checked in',
+        kind: 'inactive',
+      });
+    }
+  }
+
+  // Client Progress: Plan = active enrollment's plan type; Adherence = a
+  // recency-based check-in proxy (we don't track a real compliance metric);
+  // Trend = latest-vs-previous logged weight direction.
+  const progressRows: ProgressRow[] = activeClients.map((c) => {
+    const enrollment = latestEnrollment(c.enrollments);
+    const history = metricsByClient.get(c.id) ?? [];
+    const lastVisit = history[0]?.recorded_at;
+
+    let adherence: ProgressRow['adherence'] = 'at_risk';
+    if (lastVisit) {
+      const daysSince = (nowMs - new Date(lastVisit).getTime()) / 86400000;
+      if (daysSince <= 7) adherence = 'on_track';
+      else if (daysSince <= 21) adherence = 'slipping';
+    }
+
+    let trend: ProgressRow['trend'] = null;
+    if (history.length === 2 && history[0].weight_kg != null && history[1].weight_kg != null) {
+      const diff = history[0].weight_kg - history[1].weight_kg;
+      trend = diff < 0 ? 'down' : diff > 0 ? 'up' : 'flat';
+    }
+
+    return {
+      id: c.id,
+      name: c.full_name,
+      photoUrl: c.photo_url,
+      plan: enrollment ? (PLAN_TYPE_LABELS[enrollment.plan_type as keyof typeof PLAN_TYPE_LABELS] ?? '—') : '—',
+      adherence,
+      lastLogLabel: lastVisit ? lastVisit.slice(0, 10) : 'Never',
+      trend,
+    };
+  });
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <h1 className="text-2xl font-semibold">{firstName ? `Welcome back, ${firstName}` : 'Dashboard'}</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Active clients" value={activeClients.length} icon={Users} tone="primary" />
-        <StatCard label="Expiring in 7 days" value={expiringSoon.length} icon={CalendarClock} tone="warning" />
-        <StatCard label="No visit in 14+ days" value={inactiveClients.length} icon={UserX} tone="info" />
-        <StatCard label="Overdue payments" value={overduePayments.length} icon={Wallet} tone="danger" />
+        <StatCard label="Active Clients" value={activeClients.length} icon={Users} tone="primary" />
+        <StatCard label="Today's Appointments" value={todaysAppointments.length} icon={CalendarClock} tone="info" />
+        <StatCard label="Revenue This Month" value={revenueThisMonth} icon={Wallet} tone="success" prefix="₹" />
+        <StatCard label="Packages Expiring Soon" value={expiringSoon.length} icon={PackageOpen} tone="warning" />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <AlertList
-          title="Expiring soon"
-          items={expiringSoon.map((c) => ({
-            id: c.id,
-            label: c.full_name,
-            sub: latestEnrollment(c.enrollments)?.expiry_date ?? '',
-          }))}
-        />
-        <AlertList
-          title="No recent check-in"
-          items={inactiveClients.map((c) => ({
-            id: c.id,
-            label: c.full_name,
-            sub: lastVisitByClient.get(c.id)?.slice(0, 10) ?? 'Never',
-          }))}
-        />
-        <AlertList title="Overdue payments" items={overduePayments} />
-        <AlertList title="Today's appointments" items={todaysAppointments} />
+      <QuickActionsRow
+        practiceId={result.profile.practice_id}
+        clients={clients.map((c) => ({ id: c.id, full_name: c.full_name }))}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <TodaysSchedule items={todaysAppointments} />
+        <NeedsAttention items={attentionItems} />
       </div>
+
+      <ClientProgressTable rows={progressRows} />
     </div>
   );
 }

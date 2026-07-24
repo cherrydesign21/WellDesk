@@ -28,6 +28,7 @@ export async function createAppointment(values: AppointmentInput) {
     client_id: data.clientId,
     starts_at: startsAt,
     ends_at: endsAt,
+    mode: data.mode,
     notes: data.notes || null,
     created_by: profile.id,
   });

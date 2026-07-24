@@ -19,7 +19,7 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/appointments', label: 'Appointments', icon: CalendarDays },
 ];
 
-export function SidebarNav() {
+export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -31,14 +31,17 @@ export function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
+            title={collapsed ? item.label : undefined}
             className={`flex items-center gap-2.5 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+              collapsed ? 'justify-center' : ''
+            } ${
               isActive
                 ? 'bg-primary text-primary-foreground'
                 : 'text-foreground/70 hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            {item.label}
+            {!collapsed && item.label}
           </Link>
         );
       })}

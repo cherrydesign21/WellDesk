@@ -140,7 +140,7 @@ export default async function ClientDetailPage({
   const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
   const { data: appointments } = await supabase
     .from('appointments')
-    .select('id, client_id, starts_at, status, notes')
+    .select('id, client_id, starts_at, status, notes, mode')
     .eq('client_id', clientId)
     .order('starts_at', { ascending: false });
 
@@ -152,6 +152,7 @@ export default async function ClientDetailPage({
     local_time: utcIsoToLocalTime(a.starts_at, timezone),
     status: a.status,
     notes: a.notes,
+    mode: a.mode,
   }));
 
   const nowIso = new Date().toISOString();

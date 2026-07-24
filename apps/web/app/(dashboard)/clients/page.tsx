@@ -32,7 +32,7 @@ export default async function ClientsPage({
   let query = supabase
     .from('clients')
     .select(
-      'id, full_name, phone, email, gender, dob, address, notes, status, created_at, enrollments(plan_type, expiry_date, status, cycle_number)'
+      'id, full_name, phone, email, gender, dob, address, notes, photo_url, status, created_at, enrollments(plan_type, expiry_date, status, cycle_number)'
     );
 
   if (params.q) {
@@ -115,12 +115,12 @@ export default async function ClientsPage({
           <h1 className="text-2xl font-semibold">Clients</h1>
           <p className="text-sm text-muted-foreground">{clients.length} total</p>
         </div>
-        <NewClientDialog />
+        <NewClientDialog practiceId={result.profile.practice_id} />
       </div>
       {error ? (
         <p className="text-sm text-destructive">Failed to load clients: {error.message}</p>
       ) : (
-        <ClientsTable clients={clients} filters={params} />
+        <ClientsTable clients={clients} filters={params} practiceId={result.profile.practice_id} />
       )}
     </div>
   );

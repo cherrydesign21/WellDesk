@@ -8,6 +8,7 @@ import { clientSchema, type ClientInput, GENDERS } from '@welldesk/shared';
 import { updateClient } from '@/app/(dashboard)/clients/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AvatarUploader } from '@/components/ui/avatar-uploader';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -42,14 +43,17 @@ export type EditableClient = {
   email: string | null;
   address: string | null;
   notes: string | null;
+  photo_url: string | null;
 };
 
 export function EditClientDialog({
   client,
+  practiceId,
   open,
   onOpenChange,
 }: {
   client: EditableClient | null;
+  practiceId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -65,6 +69,7 @@ export function EditClientDialog({
       email: '',
       address: '',
       notes: '',
+      photoUrl: null,
     },
   });
 
@@ -78,6 +83,7 @@ export function EditClientDialog({
         email: client.email ?? '',
         address: client.address ?? '',
         notes: client.notes ?? '',
+        photoUrl: client.photo_url ?? null,
       });
     }
   }, [client, form]);
@@ -104,6 +110,13 @@ export function EditClientDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+            <AvatarUploader
+              key={client?.id}
+              practiceId={practiceId}
+              pathPrefix={`client-${client?.id ?? 'new'}`}
+              initialUrl={client?.photo_url}
+              onUploaded={(url) => form.setValue('photoUrl', url)}
+            />
             <FormField
               control={form.control}
               name="fullName"

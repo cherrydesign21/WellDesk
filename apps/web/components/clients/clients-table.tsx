@@ -95,7 +95,15 @@ function clientsToRows(clients: ClientRow[]): string[][] {
   });
 }
 
-export function ClientsTable({ clients, filters }: { clients: ClientRow[]; filters: ClientsFilters }) {
+export function ClientsTable({
+  clients,
+  filters,
+  practiceId,
+}: {
+  clients: ClientRow[];
+  filters: ClientsFilters;
+  practiceId: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState(filters.q ?? '');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -390,6 +398,7 @@ export function ClientsTable({ clients, filters }: { clients: ClientRow[]; filte
       </div>
       <EditClientDialog
         client={editing}
+        practiceId={practiceId}
         open={!!editing}
         onOpenChange={(open) => !open && setEditing(null)}
       />

@@ -10,7 +10,12 @@ export default async function AccountSettingsPage() {
         <h1 className="text-2xl font-semibold">Account settings</h1>
         <p className="text-sm text-muted-foreground">Your name, email, and password.</p>
       </div>
-      <AccountSettingsForm fullName={profile.full_name} email={user.email ?? ''} />
+      <AccountSettingsForm
+        fullName={profile.full_name}
+        email={user.email ?? ''}
+        avatarUrl={profile.avatar_url}
+        practiceId={profile.practice_id}
+      />
     </div>
   );
 }

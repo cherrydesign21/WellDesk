@@ -2,9 +2,15 @@
 
 import { useTransition } from 'react';
 import Link from 'next/link';
-import { Trash2, CalendarDays } from 'lucide-react';
+import { Trash2, CalendarDays, Video, Users as UsersIcon, Phone } from 'lucide-react';
 import { toast } from 'sonner';
-import { APPOINTMENT_STATUSES, APPOINTMENT_STATUS_LABELS, type AppointmentStatus } from '@welldesk/shared';
+import {
+  APPOINTMENT_STATUSES,
+  APPOINTMENT_STATUS_LABELS,
+  APPOINTMENT_MODE_LABELS,
+  type AppointmentStatus,
+  type AppointmentMode,
+} from '@welldesk/shared';
 import { updateAppointmentStatus, deleteAppointment } from '@/app/(dashboard)/appointments/actions';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -12,7 +18,9 @@ import { ExportMenu } from '@/components/ui/export-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const APPOINTMENT_EXPORT_HEADERS = ['Date', 'Time', 'Client', 'Status'];
+const APPOINTMENT_EXPORT_HEADERS = ['Date', 'Time', 'Client', 'Mode', 'Status'];
+
+const MODE_ICONS = { video: Video, in_person: UsersIcon, phone: Phone } as const;
 
 export type AppointmentRow = {
   id: string;
@@ -22,6 +30,7 @@ export type AppointmentRow = {
   local_time: string;
   status: AppointmentStatus;
   notes: string | null;
+  mode: AppointmentMode;
 };
 
 export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
@@ -52,6 +61,7 @@ export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
     row.local_date,
     row.local_time,
     row.client_name,
+    APPOINTMENT_MODE_LABELS[row.mode],
     APPOINTMENT_STATUS_LABELS[row.status],
   ]);
 
@@ -72,6 +82,7 @@ export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
               <TableHead>Date</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Client</TableHead>
+              <TableHead>Mode</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -85,6 +96,20 @@ export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
                   <Link href={`/clients/${row.client_id}`} className="hover:underline">
                     {row.client_name}
                   </Link>
+                </TableCell>
+                <TableCell>
+                  {(() => {
+                    const Icon = MODE_ICONS[row.mode];
+                    return (
+                      <span
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                        title={APPOINTMENT_MODE_LABELS[row.mode]}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {APPOINTMENT_MODE_LABELS[row.mode]}
+                      </span>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell>
                   <Select
