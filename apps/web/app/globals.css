@@ -196,7 +196,7 @@
   --border: color-mix(in oklab, var(--brand-brown-dark), transparent 88%);
   --input: color-mix(in oklab, var(--brand-brown-dark), transparent 85%);
   --ring: var(--brand-lime);
-  --sidebar: var(--brand-olive-dark);
+  --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: var(--brand-lime);
   --sidebar-primary-foreground: var(--brand-olive-dark);

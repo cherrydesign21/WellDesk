@@ -19,14 +19,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="dashboard-theme flex h-svh w-full bg-background">
       <DashboardThemeBody />
-      <DashboardSidebar practiceName={practiceName} logoUrl={logoUrl} />
+      <DashboardSidebar />
 
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border px-4 sm:px-6">
-          <div className="hidden flex-1 sm:flex">
+        <header className="grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-border px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            {logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />
+            )}
+            <span className="truncate font-heading font-semibold">{practiceName}</span>
+          </div>
+
+          <div className="hidden justify-self-center sm:flex">
             <ClientSearch />
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+
+          <div className="flex shrink-0 items-center justify-self-end gap-2">
             <NotificationsMenu items={notifications} />
             <ProfileMenu
               fullName={profile.full_name}

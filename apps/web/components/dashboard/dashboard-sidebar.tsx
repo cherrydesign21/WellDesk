@@ -2,18 +2,18 @@
 
 import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Leaf } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SidebarNav } from './sidebar-nav';
 
 const STORAGE_KEY = 'welldesk-sidebar-collapsed';
 const listeners = new Set<() => void>();
 
 function getSnapshot() {
-  return localStorage.getItem(STORAGE_KEY) !== '0';
+  return localStorage.getItem(STORAGE_KEY) === '1';
 }
 
 function getServerSnapshot() {
-  return true;
+  return false;
 }
 
 function subscribe(callback: () => void) {
@@ -26,13 +26,7 @@ function setCollapsedStore(next: boolean) {
   for (const listener of listeners) listener();
 }
 
-export function DashboardSidebar({
-  practiceName,
-  logoUrl,
-}: {
-  practiceName: string;
-  logoUrl?: string | null;
-}) {
+export function DashboardSidebar() {
   const collapsed = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
@@ -43,19 +37,15 @@ export function DashboardSidebar({
     >
       <Link
         href="/"
-        className={`mb-6 flex items-center gap-2 rounded-xl px-2 py-2 text-sidebar-foreground ${
-          collapsed ? 'justify-center' : ''
-        }`}
+        className={`mb-6 flex items-center rounded-xl px-2 py-2 ${collapsed ? 'justify-center' : ''}`}
       >
-        {logoUrl ? (
+        {collapsed ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
+          <img src="/sidebar-icon.svg" alt="WellDesk" className="h-8 w-8" />
         ) : (
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <Leaf className="h-5 w-5" />
-          </span>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/sidebar-horizontal-logo.svg" alt="WellDesk" className="h-8 w-auto" />
         )}
-        {!collapsed && <span className="truncate font-heading font-semibold">{practiceName}</span>}
       </Link>
 
       <SidebarNav collapsed={collapsed} />
