@@ -51,14 +51,17 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
 
     const { data: existing } = await supabase
       .from('clients')
-      .select('id, full_name')
+      .select('id, full_name, phone, email')
       .eq('practice_id', profile.practice_id)
       .or(orFilters.join(','))
       .limit(1)
       .maybeSingle();
 
     if (existing) {
-      return { duplicate: existing };
+      const matchedFields: ('phone' | 'email')[] = [];
+      if (data.phone && existing.phone === data.phone) matchedFields.push('phone');
+      if (data.email && existing.email?.toLowerCase() === data.email.toLowerCase()) matchedFields.push('email');
+      return { duplicate: { id: existing.id, full_name: existing.full_name, matchedFields } };
     }
   }
 

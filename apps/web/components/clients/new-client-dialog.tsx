@@ -54,7 +54,11 @@ export function NewClientDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [duplicate, setDuplicate] = useState<{ id: string; full_name: string } | null>(null);
+  const [duplicate, setDuplicate] = useState<{
+    id: string;
+    full_name: string;
+    matchedFields: ('phone' | 'email')[];
+  } | null>(null);
 
   const form = useForm<CreateClientInput>({
     resolver: zodResolver(createClientSchema),
@@ -320,8 +324,13 @@ export function NewClientDialog({
             {duplicate && (
               <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
                 <p>
-                  A client named <strong>{duplicate.full_name}</strong> already has this phone or
-                  email.
+                  A client named <strong>{duplicate.full_name}</strong> already has this{' '}
+                  {duplicate.matchedFields.length === 2
+                    ? 'phone number and email'
+                    : duplicate.matchedFields[0] === 'email'
+                      ? 'email'
+                      : 'phone number'}
+                  .
                 </p>
                 <Button
                   type="button"
