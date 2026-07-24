@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand-logo';
 import type { Testimonial } from '@/lib/testimonials';
 
 export function AuthShell({
@@ -28,8 +29,7 @@ export function AuthShell({
       <div className="flex w-full flex-col justify-center px-4 py-10 sm:px-10 lg:w-1/2 lg:px-16">
         <div className="mx-auto w-full max-w-sm">
           <Link href="/" className="mb-10 flex justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-welldesk.svg" alt="WellDesk" className="h-8 w-auto" />
+            <BrandLogo iconClassName="h-8 w-8" wordmarkClassName="h-6 w-auto" />
           </Link>
           {children}
         </div>

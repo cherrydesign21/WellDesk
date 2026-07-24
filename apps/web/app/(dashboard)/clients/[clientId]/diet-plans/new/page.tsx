@@ -46,6 +46,7 @@ export default async function NewClientDietPlanPage({
         initialName={initialName}
         initialMeals={initialMeals}
         supersedesPlanId={fromPlanId}
+        templateId={fromTemplateId}
       />
     </div>
   );

@@ -12,7 +12,7 @@ import { dietPlanSchema, type DietPlanInput } from '@welldesk/shared';
 export async function createClientDietPlan(
   clientId: string,
   values: DietPlanInput,
-  options?: { supersedesPlanId?: string }
+  options?: { supersedesPlanId?: string; templateId?: string }
 ) {
   const parsed = dietPlanSchema.safeParse(values);
   if (!parsed.success) {
@@ -37,13 +37,15 @@ export async function createClientDietPlan(
     .maybeSingle();
 
   let version = 1;
+  let inheritedTemplateId: string | null = null;
   if (options?.supersedesPlanId) {
     const { data: sourcePlan } = await supabase
       .from('diet_plans')
-      .select('version')
+      .select('version, template_id')
       .eq('id', options.supersedesPlanId)
       .single();
     version = (sourcePlan?.version ?? 0) + 1;
+    inheritedTemplateId = sourcePlan?.template_id ?? null;
   }
 
   const { data: plan, error: planError } = await supabase
@@ -57,6 +59,7 @@ export async function createClientDietPlan(
       plan_date: data.planDate,
       version,
       supersedes_plan_id: options?.supersedesPlanId ?? null,
+      template_id: options?.templateId ?? inheritedTemplateId,
       created_by: profile.id,
     })
     .select('id')

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -18,6 +19,19 @@ export default async function DietPlanTemplatesPage() {
     .eq('is_template', true)
     .order('name');
 
+  const { data: assignedRows } = await supabase
+    .from('diet_plans')
+    .select('template_id, client_id')
+    .eq('is_template', false)
+    .not('template_id', 'is', null);
+
+  const clientsByTemplate = new Map<string, Set<string>>();
+  for (const row of assignedRows ?? []) {
+    const set = clientsByTemplate.get(row.template_id as string) ?? new Set<string>();
+    set.add(row.client_id);
+    clientsByTemplate.set(row.template_id as string, set);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -33,29 +47,42 @@ export default async function DietPlanTemplatesPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Assigned to</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {(!templates || templates.length === 0) && (
               <TableRow>
-                <TableCell colSpan={2}>
+                <TableCell colSpan={3}>
                   <EmptyState icon={UtensilsCrossed} title="No templates yet" description="Create a template to reuse across clients." compact />
                 </TableCell>
               </TableRow>
             )}
-            {templates?.map((template) => (
-              <TableRow key={template.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/diet-plans/templates/${template.id}`} className="hover:underline">
-                    {template.name}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <DeleteTemplateButton templateId={template.id} />
-                </TableCell>
-              </TableRow>
-            ))}
+            {templates?.map((template) => {
+              const assignedCount = clientsByTemplate.get(template.id)?.size ?? 0;
+              return (
+                <TableRow key={template.id}>
+                  <TableCell className="font-medium">
+                    <Link href={`/diet-plans/templates/${template.id}`} className="hover:underline">
+                      {template.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    {assignedCount > 0 ? (
+                      <Badge variant="info">
+                        {assignedCount} client{assignedCount === 1 ? '' : 's'}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Not assigned</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <DeleteTemplateButton templateId={template.id} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

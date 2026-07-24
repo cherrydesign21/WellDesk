@@ -43,7 +43,7 @@ function Input({
           placeholder={placeholder}
           data-slot="input"
           className={cn(
-            "h-10 w-full min-w-0 rounded-[6px] border border-[#BDBDBD] bg-transparent px-3 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus:border-[#737373] disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm",
+            "h-10 w-full min-w-0 rounded-[6px] border border-[#BDBDBD] bg-white px-3 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus:border-[#737373] disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm",
             isPassword && "pr-10",
             className
           )}
@@ -66,7 +66,7 @@ function Input({
         // visually double up with the label when the field is empty.
         placeholder={undefined}
         className={cn(
-          "peer h-[60px] w-full min-w-0 rounded-[6px] border bg-transparent px-3 pt-3 text-base transition-colors outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm",
+          "peer h-[60px] w-full min-w-0 rounded-[6px] border bg-white px-3 pt-3 text-base transition-colors outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm",
           isPassword && "pr-10",
           hasValue ? "border-[#A3B73A]" : "border-[#BDBDBD] focus:border-[#737373]",
           "aria-invalid:border-destructive",

@@ -120,6 +120,9 @@ export function BrandingForm({
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Used on your client portal and exported documents — your working dashboard always uses Jost.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
