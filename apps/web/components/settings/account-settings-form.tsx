@@ -20,11 +20,13 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 export function AccountSettingsForm({
   fullName,
   email,
+  phone,
   avatarUrl,
   practiceId,
 }: {
   fullName: string;
   email: string;
+  phone?: string | null;
   avatarUrl?: string | null;
   practiceId: string;
 }) {
@@ -44,7 +46,7 @@ export function AccountSettingsForm({
 
   const profileForm = useForm<AccountSettingsInput>({
     resolver: zodResolver(accountSettingsSchema),
-    defaultValues: { fullName },
+    defaultValues: { fullName, phone: phone ?? '' },
   });
 
   const passwordForm = useForm<ChangePasswordInput>({
@@ -76,7 +78,7 @@ export function AccountSettingsForm({
   }
 
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="grid gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Profile</CardTitle>
@@ -102,6 +104,18 @@ export function AccountSettingsForm({
                   <FormItem>
                     <FormControl>
                       <Input label="Full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={profileForm.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input label="Phone" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,12 +1,12 @@
 import { requireProfile } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { getNotifications } from '@/lib/notifications';
+import { AppThemeBody } from '@/components/shell/app-theme-body';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { ProfileMenu } from '@/components/dashboard/profile-menu';
 import { ClientSearch } from '@/components/dashboard/client-search';
 import { NotificationsMenu } from '@/components/dashboard/notifications-menu';
 import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
-import { DashboardThemeBody } from '@/components/dashboard/dashboard-theme-body';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await requireProfile();
@@ -17,8 +17,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const notifications = await getNotifications(supabase);
 
   return (
-    <div className="dashboard-theme flex h-svh w-full bg-background">
-      <DashboardThemeBody />
+    <div className="app-theme flex h-svh w-full bg-background">
+      <AppThemeBody />
       <DashboardSidebar />
 
       <div className="flex h-full min-w-0 flex-1 flex-col">

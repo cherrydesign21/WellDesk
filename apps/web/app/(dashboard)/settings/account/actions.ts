@@ -24,7 +24,7 @@ export async function updateAccountSettings(values: AccountSettingsInput) {
 
   const { error } = await supabase
     .from('profiles')
-    .update({ full_name: parsed.data.fullName })
+    .update({ full_name: parsed.data.fullName, phone: parsed.data.phone || null })
     .eq('id', result.profile.id);
 
   if (error) {

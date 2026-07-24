@@ -12,7 +12,7 @@ export async function getCurrentProfile(supabase: SupabaseClient) {
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'id, full_name, role, avatar_url, practice_id, is_super_admin, practices(name, tagline, logo_url, primary_color, font_choice, timezone, suspended_at)'
+      'id, full_name, phone, role, avatar_url, practice_id, is_super_admin, practices(name, tagline, logo_url, primary_color, font_choice, timezone, suspended_at)'
     )
     .eq('id', user.id)
     .single();

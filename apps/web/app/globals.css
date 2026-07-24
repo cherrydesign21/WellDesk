@@ -129,7 +129,7 @@
   --info-900: oklch(0.280 0.080 230);
 
   /* Fixed WellDesk brand palette — used across marketing/auth pages and,
-     via .dashboard-theme below, the working dashboard itself. */
+     via .app-theme below, the dashboard, admin panel, and client portal. */
   --brand-cream: #f7f1e3;
   --brand-olive-dark: #454e17;
   --brand-lime: #a3b73a;
@@ -175,10 +175,11 @@
   --sidebar-ring: var(--primary-400);
 }
 
-/* The dietitian-facing dashboard's fixed visual identity (per-practice
-   primary_color no longer themes this surface — it now only drives the
-   client portal and exported documents, e.g. report cards). */
-.dashboard-theme {
+/* WellDesk's fixed visual identity — shared by the dietitian dashboard, the
+   super-admin panel, and the client portal, so every role looks and feels
+   the same. Per-practice primary_color/font_choice only drive exported
+   documents (PDF report cards, public shared plans), not any of these. */
+.app-theme {
   --background: oklch(1 0 0);
   --foreground: var(--brand-brown-dark);
   --card: oklch(1 0 0);

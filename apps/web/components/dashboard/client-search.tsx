@@ -45,8 +45,8 @@ export function ClientSearch() {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-sm">
-      <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div ref={containerRef} className="relative w-full max-w-md">
+      <Search className="pointer-events-none absolute top-1/2 left-4 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground" />
       <input
         type="text"
         value={query}
@@ -54,10 +54,10 @@ export function ClientSearch() {
         onFocus={() => results.length > 0 && setOpen(true)}
         onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
         placeholder="Search clients…"
-        className="h-10 w-full rounded-full border border-input bg-card pr-3 pl-9 text-sm outline-none focus:border-ring"
+        className="h-12 w-full rounded-full border border-input bg-card pr-4 pl-11 text-base outline-none focus:border-ring"
       />
       {isLoading && (
-        <Loader2 className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        <Loader2 className="absolute top-1/2 right-4 h-4.5 w-4.5 -translate-y-1/2 animate-spin text-muted-foreground" />
       )}
 
       {open && query.trim().length >= 2 && (

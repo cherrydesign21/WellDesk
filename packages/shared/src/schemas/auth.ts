@@ -32,6 +32,12 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
 export const accountSettingsSchema = z.object({
   fullName: z.string().trim().min(2, 'Name must be at least 2 characters').max(120),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+\-\s()]{7,20}$/, 'Enter a valid phone number')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type AccountSettingsInput = z.infer<typeof accountSettingsSchema>;

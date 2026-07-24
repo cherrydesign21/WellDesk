@@ -1,5 +1,7 @@
 import { requireClient } from '@/lib/auth';
 import { portalLogout } from '@/app/portal/actions';
+import { AppThemeBody } from '@/components/shell/app-theme-body';
+import { PortalSidebar } from '@/components/portal/portal-sidebar';
 import { Button } from '@/components/ui/button';
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -8,25 +10,34 @@ export default async function PortalLayout({ children }: { children: React.React
   const logoUrl = client.practices?.logo_url as string | null | undefined;
 
   return (
-    <div className="min-h-svh">
-      <header className="flex items-center justify-between border-b px-6 py-4">
-        <div className="flex items-center gap-2">
-          {logoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt="" className="h-8 w-8 shrink-0 rounded object-contain" />
-          )}
-          <div>
-            <p className="text-lg font-semibold">{practiceName}</p>
-            <p className="text-sm text-muted-foreground">{client.full_name}</p>
+    <div className="app-theme flex h-svh w-full bg-background">
+      <AppThemeBody />
+      <PortalSidebar />
+
+      <div className="flex h-full min-w-0 flex-1 flex-col">
+        <header className="grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-border px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            {logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />
+            )}
+            <span className="truncate font-heading font-semibold">{practiceName}</span>
           </div>
-        </div>
-        <form action={portalLogout}>
-          <Button type="submit" variant="ghost">
-            Log out
-          </Button>
-        </form>
-      </header>
-      <main className="mx-auto max-w-3xl p-6">{children}</main>
+
+          <div />
+
+          <div className="flex shrink-0 items-center justify-self-end gap-3">
+            <span className="hidden text-sm text-muted-foreground sm:inline">{client.full_name}</span>
+            <form action={portalLogout}>
+              <Button type="submit" variant="ghost">
+                Log out
+              </Button>
+            </form>
+          </div>
+        </header>
+
+        <main className="min-h-0 flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
     </div>
   );
 }

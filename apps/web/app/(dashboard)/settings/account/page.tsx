@@ -13,6 +13,7 @@ export default async function AccountSettingsPage() {
       <AccountSettingsForm
         fullName={profile.full_name}
         email={user.email ?? ''}
+        phone={profile.phone}
         avatarUrl={profile.avatar_url}
         practiceId={profile.practice_id}
       />

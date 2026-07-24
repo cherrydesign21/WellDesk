@@ -1,33 +1,31 @@
-import Link from 'next/link';
-import { ShieldCheck } from 'lucide-react';
 import { requireSuperAdmin } from '@/lib/auth';
-import { logout } from '@/app/(auth)/actions';
-import { Button } from '@/components/ui/button';
-import { AdminNavTabs } from '@/components/admin/admin-nav-tabs';
+import { AppThemeBody } from '@/components/shell/app-theme-body';
+import { AdminSidebar } from '@/components/admin/admin-sidebar';
+import { ProfileMenu } from '@/components/dashboard/profile-menu';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireSuperAdmin();
+  const { profile } = await requireSuperAdmin();
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-foreground px-4 text-background sm:px-6">
-        <Link href="/admin" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <ShieldCheck className="h-5 w-5" />
-          WellDesk Admin
-        </Link>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" className="text-background hover:bg-background/10 hover:text-background" render={<Link href="/" />}>
-            Exit to dashboard
-          </Button>
-          <form action={logout}>
-            <Button type="submit" variant="ghost" className="text-background hover:bg-background/10 hover:text-background">
-              Log out
-            </Button>
-          </form>
-        </div>
-      </header>
-      <AdminNavTabs />
-      <main className="flex-1 p-6">{children}</main>
+    <div className="app-theme flex h-svh w-full bg-background">
+      <AppThemeBody />
+      <AdminSidebar />
+
+      <div className="flex h-full min-w-0 flex-1 flex-col">
+        <header className="grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-border px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate font-heading font-semibold">WellDesk Admin</span>
+          </div>
+
+          <div />
+
+          <div className="flex shrink-0 items-center justify-self-end gap-2">
+            <ProfileMenu fullName={profile.full_name} avatarUrl={profile.avatar_url} isSuperAdmin={profile.is_super_admin} />
+          </div>
+        </header>
+
+        <main className="min-h-0 flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
     </div>
   );
 }
