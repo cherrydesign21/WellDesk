@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Jost, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "WellDesk",
   description: "Dietitian practice management platform",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#454e17",
 };
 
 export default function RootLayout({

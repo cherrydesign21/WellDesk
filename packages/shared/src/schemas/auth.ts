@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GENDERS } from '../constants';
 
 export const loginSchema = z.object({
   email: z.string().trim().email('Enter a valid email'),
@@ -11,6 +12,7 @@ export const registerSchema = z
   .object({
     firstName: z.string().trim().min(1, 'First name is required').max(60),
     lastName: z.string().trim().min(1, 'Last name is required').max(60),
+    gender: z.enum(GENDERS, { message: 'Gender is required' }),
     email: z.string().trim().email('Enter a valid email'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),

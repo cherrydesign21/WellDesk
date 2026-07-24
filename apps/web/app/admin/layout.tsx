@@ -3,6 +3,7 @@ import { ShieldCheck } from 'lucide-react';
 import { requireSuperAdmin } from '@/lib/auth';
 import { logout } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
+import { AdminNavTabs } from '@/components/admin/admin-nav-tabs';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireSuperAdmin();
@@ -25,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </form>
         </div>
       </header>
+      <AdminNavTabs />
       <main className="flex-1 p-6">{children}</main>
     </div>
   );

@@ -42,6 +42,7 @@ export async function register(values: RegisterInput) {
     options: {
       data: {
         full_name: fullName,
+        gender: parsed.data.gender,
         practice_name: `${parsed.data.firstName}'s Practice`,
       },
       emailRedirectTo: `${getSiteUrl()}/auth/callback`,

@@ -187,6 +187,67 @@ function SelectScrollDownButton({
   )
 }
 
+// A Select that matches the app-wide floating-label text field: 60px tall,
+// 6px radius, #BDBDBD/#737373/#A3B73A borders, label floats up once a value
+// is chosen. Mirrors components/ui/input.tsx's labeled-mode markup exactly
+// so the two read as the same design system side by side in a form.
+function FloatingSelect({
+  label,
+  value,
+  onValueChange,
+  placeholder,
+  children,
+  disabled,
+  className,
+}: {
+  label: string
+  value?: string
+  onValueChange?: (value: string) => void
+  placeholder?: string
+  children: React.ReactNode
+  disabled?: boolean
+  className?: string
+}) {
+  const generatedId = React.useId()
+  const hasValue = value !== undefined && value !== null && value !== ""
+
+  return (
+    <Select value={value} onValueChange={(v) => onValueChange?.(v ?? "")} disabled={disabled}>
+      <div className="relative">
+        <SelectPrimitive.Trigger
+          id={generatedId}
+          data-slot="select-trigger"
+          className={cn(
+            "peer flex h-15 w-full min-w-0 items-center justify-between gap-1.5 rounded-[6px] border bg-transparent px-3 pt-3 text-base outline-none transition-colors disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+            hasValue ? "border-[#A3B73A]" : "border-[#BDBDBD] focus:border-[#737373]",
+            "aria-invalid:border-destructive",
+            className
+          )}
+        >
+          <SelectValue placeholder={placeholder} className="capitalize" />
+          <SelectPrimitive.Icon
+            render={<ChevronDownIcon className="pointer-events-none size-4 text-muted-foreground" />}
+          />
+        </SelectPrimitive.Trigger>
+        <label
+          htmlFor={generatedId}
+          className={cn(
+            "pointer-events-none absolute left-3 origin-left text-base text-[#666666] transition-all duration-150",
+            hasValue
+              ? "top-0 -translate-y-1/2 scale-90 bg-white px-1 text-[#A3B73A]"
+              : "top-1/2 -translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-90 peer-focus:bg-white peer-focus:px-1",
+            "peer-aria-invalid:text-destructive",
+            "peer-disabled:opacity-50"
+          )}
+        >
+          {label}
+        </label>
+      </div>
+      <SelectContent>{children}</SelectContent>
+    </Select>
+  )
+}
+
 export {
   Select,
   SelectContent,
@@ -198,4 +259,5 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  FloatingSelect,
 }

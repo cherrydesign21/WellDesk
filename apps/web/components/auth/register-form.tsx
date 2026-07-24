@@ -4,10 +4,11 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registerSchema, type RegisterInput } from '@welldesk/shared';
+import { registerSchema, GENDERS, type RegisterInput } from '@welldesk/shared';
 import { register } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FloatingSelect, SelectItem } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 export function RegisterForm() {
@@ -17,7 +18,14 @@ export function RegisterForm() {
 
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { firstName: '', lastName: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      gender: undefined,
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   });
 
   function onSubmit(values: RegisterInput) {
@@ -64,6 +72,24 @@ export function RegisterForm() {
               )}
             />
           </div>
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <FloatingSelect label="Gender" value={field.value} onValueChange={field.onChange}>
+                    {GENDERS.map((g) => (
+                      <SelectItem key={g} value={g} className="capitalize">
+                        {g}
+                      </SelectItem>
+                    ))}
+                  </FloatingSelect>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="email"
