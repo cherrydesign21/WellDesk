@@ -54,7 +54,7 @@ export function ClientSearch() {
         onFocus={() => results.length > 0 && setOpen(true)}
         onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
         placeholder="Search clients…"
-        className="h-9 w-full rounded-full border border-input bg-background pr-3 pl-9 text-sm outline-none focus:border-ring"
+        className="h-10 w-full rounded-full border border-input bg-card pr-3 pl-9 text-sm outline-none focus:border-ring"
       />
       {isLoading && (
         <Loader2 className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />

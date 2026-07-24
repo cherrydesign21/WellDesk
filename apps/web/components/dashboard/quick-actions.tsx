@@ -4,12 +4,12 @@ import { NewClientDialog } from '@/components/clients/new-client-dialog';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
 
 const CARD_CLASS =
-  'flex flex-col items-center justify-center gap-2 rounded-xl border bg-card p-4 text-center transition-colors hover:bg-accent hover:text-accent-foreground';
+  'flex items-center gap-3 rounded-xl border bg-card p-4 text-left transition-colors hover:bg-accent hover:text-accent-foreground';
 
 function QuickActionContent({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
     <>
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <Icon className="h-5 w-5" />
       </div>
       <span className="text-sm font-medium">{label}</span>

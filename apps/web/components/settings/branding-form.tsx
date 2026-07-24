@@ -90,6 +90,10 @@ export function BrandingForm({
                       <Input {...field} className="flex-1" />
                     </div>
                   </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Used on your client portal and exported documents — your working dashboard uses WellDesk&apos;s
+                    fixed color scheme.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

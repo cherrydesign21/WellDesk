@@ -14,33 +14,34 @@ import {
 
 export function ProfileMenu({
   fullName,
-  role,
   avatarUrl,
   isSuperAdmin,
 }: {
   fullName: string;
-  role: string;
   avatarUrl?: string | null;
   isSuperAdmin?: boolean;
 }) {
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
+  const firstName = fullName.trim().split(/\s+/)[0] ?? fullName;
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" className="h-auto gap-2 px-2 py-1.5" />}>
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" className="h-auto gap-2 rounded-full border border-border bg-card px-3 py-1.5" />}
+      >
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+          <img src={avatarUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
         ) : (
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
             {initial}
           </div>
         )}
         <div className="hidden min-w-0 text-left sm:block">
-          <p className="truncate text-sm font-medium">{fullName}</p>
-          <p className="truncate text-xs text-muted-foreground capitalize">{role}</p>
+          <p className="truncate text-sm font-semibold">Greetings! 👋</p>
+          <p className="truncate text-xs text-muted-foreground">Start your day with {firstName}</p>
         </div>
-        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <ChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground sm:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem render={<Link href="/settings/account" />}>

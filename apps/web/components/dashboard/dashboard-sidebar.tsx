@@ -1,18 +1,19 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight, Leaf } from 'lucide-react';
 import { SidebarNav } from './sidebar-nav';
 
 const STORAGE_KEY = 'welldesk-sidebar-collapsed';
 const listeners = new Set<() => void>();
 
 function getSnapshot() {
-  return localStorage.getItem(STORAGE_KEY) === '1';
+  return localStorage.getItem(STORAGE_KEY) !== '0';
 }
 
 function getServerSnapshot() {
-  return false;
+  return true;
 }
 
 function subscribe(callback: () => void) {
@@ -36,23 +37,34 @@ export function DashboardSidebar({
 
   return (
     <aside
-      className={`hidden shrink-0 flex-col border-r bg-sidebar p-4 transition-[width] duration-200 md:flex ${
-        collapsed ? 'w-20' : 'w-64'
+      className={`hidden shrink-0 flex-col bg-sidebar p-3 transition-[width] duration-200 md:flex ${
+        collapsed ? 'w-20 items-center' : 'w-64'
       }`}
     >
-      <div className="mb-6 flex flex-col items-center gap-2 px-2 pt-2 text-center">
-        {logoUrl && (
+      <Link
+        href="/"
+        className={`mb-6 flex items-center gap-2 rounded-xl px-2 py-2 text-sidebar-foreground ${
+          collapsed ? 'justify-center' : ''
+        }`}
+      >
+        {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="" className="h-12 w-12 rounded object-contain" />
+          <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
+        ) : (
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+            <Leaf className="h-5 w-5" />
+          </span>
         )}
-        {!collapsed && <p className="font-heading font-semibold">{practiceName}</p>}
-      </div>
+        {!collapsed && <span className="truncate font-heading font-semibold">{practiceName}</span>}
+      </Link>
+
       <SidebarNav collapsed={collapsed} />
+
       <button
         type="button"
         onClick={() => setCollapsedStore(!collapsed)}
         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        className={`mt-4 flex items-center gap-2 rounded-full px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground ${
+        className={`mt-4 flex items-center gap-2 rounded-full px-3 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground ${
           collapsed ? 'justify-center' : ''
         }`}
       >

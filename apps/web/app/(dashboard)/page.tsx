@@ -10,6 +10,7 @@ import {
   type AppointmentMode,
 } from '@welldesk/shared';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { TodaysSchedule, type ScheduleItem } from '@/components/dashboard/todays-schedule';
 import { NeedsAttention, type AttentionItem } from '@/components/dashboard/needs-attention';
@@ -22,11 +23,18 @@ type ClientLite = {
   full_name: string;
   status: string;
   photo_url: string | null;
+  created_at: string;
   enrollments: Enrollment[];
 };
 
 function latestEnrollment(enrollments: Enrollment[]) {
   return [...(enrollments ?? [])].sort((a, b) => b.cycle_number - a.cycle_number)[0];
+}
+
+function getGreeting(hour: number) {
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
 }
 
 const STAT_ICON_CLASSES = {
@@ -36,39 +44,41 @@ const STAT_ICON_CLASSES = {
   info: 'bg-info/15 text-(--info-700)',
 } as const;
 
-const STAT_BORDER_CLASSES = {
-  primary: 'border-l-4 border-l-primary',
-  warning: 'border-l-4 border-l-warning',
-  success: 'border-l-4 border-l-success',
-  info: 'border-l-4 border-l-info',
-} as const;
-
 function StatCard({
   label,
   value,
   icon: Icon,
   tone,
   prefix,
+  badge,
+  badgeTone,
 }: {
   label: string;
   value: number;
   icon: LucideIcon;
   tone: keyof typeof STAT_ICON_CLASSES;
   prefix?: string;
+  badge?: string;
+  badgeTone?: 'success' | 'info' | 'warning' | 'destructive';
 }) {
   return (
-    <Card className={STAT_BORDER_CLASSES[tone]}>
-      <CardContent className="flex items-center gap-4 py-4">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${STAT_ICON_CLASSES[tone]}`}>
-          <Icon className="h-5 w-5" />
-        </div>
+    <Card>
+      <CardContent className="flex items-start justify-between py-4">
         <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="text-2xl font-semibold">
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${STAT_ICON_CLASSES[tone]}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <p className="mt-3 text-2xl font-semibold">
             {prefix}
             <AnimatedCounter value={value} />
           </p>
+          <p className="text-xs text-muted-foreground">{label}</p>
         </div>
+        {badge && (
+          <Badge variant={badgeTone ?? 'success'} className="shrink-0">
+            {badge}
+          </Badge>
+        )}
       </CardContent>
     </Card>
   );
@@ -82,9 +92,19 @@ export default async function DashboardPage() {
   const firstName = result.profile.full_name.trim().split(/\s+/)[0] ?? '';
   const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
 
+  const nowLocalHour = Number(
+    new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: timezone }).format(new Date())
+  );
+  const todayLabel = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: timezone,
+  }).format(new Date());
+
   const { data: clientsRaw } = await supabase
     .from('clients')
-    .select('id, full_name, status, photo_url, enrollments(plan_type, expiry_date, status, cycle_number)');
+    .select('id, full_name, status, photo_url, created_at, enrollments(plan_type, expiry_date, status, cycle_number)');
 
   const clients = (clientsRaw ?? []) as ClientLite[];
 
@@ -115,12 +135,20 @@ export default async function DashboardPage() {
 
   const now = new Date();
   const nowMs = now.getTime();
+  const currentMonthKey = now.toISOString().slice(0, 7);
+  const newThisMonth = clients.filter((c) => c.created_at?.slice(0, 7) === currentMonthKey).length;
+
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const { data: monthPayments } = await supabase
-    .from('payments')
-    .select('amount')
-    .gte('payment_date', firstOfMonth);
+  const firstOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+
+  const [{ data: monthPayments }, { data: prevMonthPayments }] = await Promise.all([
+    supabase.from('payments').select('amount').gte('payment_date', firstOfMonth),
+    supabase.from('payments').select('amount').gte('payment_date', firstOfPrevMonth).lt('payment_date', firstOfMonth),
+  ]);
   const revenueThisMonth = (monthPayments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const revenuePrevMonth = (prevMonthPayments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const revenueChangePct =
+    revenuePrevMonth > 0 ? Math.round(((revenueThisMonth - revenuePrevMonth) / revenuePrevMonth) * 100) : null;
 
   const { data: overdueRows } = await supabase
     .from('v_enrollment_payment_status')
@@ -159,6 +187,8 @@ export default async function DashboardPage() {
         mode: a.mode,
       };
     });
+
+  const videoAppointmentsToday = todaysAppointments.filter((a) => a.mode === 'video').length;
 
   // Needs Attention: merge expiring plans, stale check-ins, and overdue
   // payments into one urgency-sorted feed (expiring first, then overdue,
@@ -206,23 +236,31 @@ export default async function DashboardPage() {
 
   // Client Progress: Plan = active enrollment's plan type; Adherence = a
   // recency-based check-in proxy (we don't track a real compliance metric);
-  // Trend = latest-vs-previous logged weight direction.
+  // Trend = latest-vs-previous logged weight direction + magnitude.
   const progressRows: ProgressRow[] = activeClients.map((c) => {
     const enrollment = latestEnrollment(c.enrollments);
     const history = metricsByClient.get(c.id) ?? [];
     const lastVisit = history[0]?.recorded_at;
 
     let adherence: ProgressRow['adherence'] = 'at_risk';
+    let adherencePct = 15;
     if (lastVisit) {
       const daysSince = (nowMs - new Date(lastVisit).getTime()) / 86400000;
-      if (daysSince <= 7) adherence = 'on_track';
-      else if (daysSince <= 21) adherence = 'slipping';
+      if (daysSince <= 7) {
+        adherence = 'on_track';
+        adherencePct = 90;
+      } else if (daysSince <= 21) {
+        adherence = 'slipping';
+        adherencePct = 50;
+      }
     }
 
     let trend: ProgressRow['trend'] = null;
+    let trendKg: number | null = null;
     if (history.length === 2 && history[0].weight_kg != null && history[1].weight_kg != null) {
-      const diff = history[0].weight_kg - history[1].weight_kg;
+      const diff = Math.round((history[0].weight_kg - history[1].weight_kg) * 10) / 10;
       trend = diff < 0 ? 'down' : diff > 0 ? 'up' : 'flat';
+      trendKg = Math.abs(diff);
     }
 
     return {
@@ -231,20 +269,56 @@ export default async function DashboardPage() {
       photoUrl: c.photo_url,
       plan: enrollment ? (PLAN_TYPE_LABELS[enrollment.plan_type as keyof typeof PLAN_TYPE_LABELS] ?? '—') : '—',
       adherence,
+      adherencePct,
       lastLogLabel: lastVisit ? lastVisit.slice(0, 10) : 'Never',
       trend,
+      trendKg,
     };
   });
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{firstName ? `Welcome back, ${firstName}` : 'Dashboard'}</h1>
+      <div>
+        <h1 className="text-2xl font-semibold">
+          {firstName ? `${getGreeting(nowLocalHour)}, ${firstName}` : 'Dashboard'}
+        </h1>
+        <p className="text-sm text-muted-foreground">{todayLabel} — here&apos;s what&apos;s happening today</p>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Active Clients" value={activeClients.length} icon={Users} tone="primary" />
-        <StatCard label="Today's Appointments" value={todaysAppointments.length} icon={CalendarClock} tone="info" />
-        <StatCard label="Revenue This Month" value={revenueThisMonth} icon={Wallet} tone="success" prefix="₹" />
-        <StatCard label="Packages Expiring Soon" value={expiringSoon.length} icon={PackageOpen} tone="warning" />
+        <StatCard
+          label="Active Clients"
+          value={activeClients.length}
+          icon={Users}
+          tone="primary"
+          badge={newThisMonth > 0 ? `+${newThisMonth} this mo.` : undefined}
+          badgeTone="success"
+        />
+        <StatCard
+          label="Today's Appointments"
+          value={todaysAppointments.length}
+          icon={CalendarClock}
+          tone="info"
+          badge={videoAppointmentsToday > 0 ? `${videoAppointmentsToday} video` : undefined}
+          badgeTone="info"
+        />
+        <StatCard
+          label="Revenue This Month"
+          value={revenueThisMonth}
+          icon={Wallet}
+          tone="success"
+          prefix="₹"
+          badge={revenueChangePct !== null ? `${revenueChangePct >= 0 ? '+' : ''}${revenueChangePct}%` : undefined}
+          badgeTone={revenueChangePct !== null && revenueChangePct < 0 ? 'destructive' : 'success'}
+        />
+        <StatCard
+          label="Packages Expiring Soon"
+          value={expiringSoon.length}
+          icon={PackageOpen}
+          tone="warning"
+          badge={expiringSoon.length > 0 ? 'Act soon' : undefined}
+          badgeTone="destructive"
+        />
       </div>
 
       <QuickActionsRow

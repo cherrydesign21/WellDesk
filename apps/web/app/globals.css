@@ -125,6 +125,13 @@
   --info-800: oklch(0.360 0.105 230);
   --info-900: oklch(0.280 0.080 230);
 
+  /* Fixed WellDesk brand palette — used across marketing/auth pages and,
+     via .dashboard-theme below, the working dashboard itself. */
+  --brand-cream: #f7f1e3;
+  --brand-olive-dark: #454e17;
+  --brand-lime: #a3b73a;
+  --brand-brown-dark: #3c1d0c;
+
   --background: var(--grey-100);
   --foreground: var(--grey-900);
   --card: oklch(1 0 0);
@@ -163,6 +170,38 @@
   --sidebar-accent-foreground: var(--primary-700);
   --sidebar-border: var(--grey-200);
   --sidebar-ring: var(--primary-400);
+}
+
+/* The dietitian-facing dashboard's fixed visual identity (per-practice
+   primary_color no longer themes this surface — it now only drives the
+   client portal and exported documents, e.g. report cards). */
+.dashboard-theme {
+  --background: var(--brand-cream);
+  --foreground: var(--brand-brown-dark);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--brand-brown-dark);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--brand-brown-dark);
+  --primary: var(--brand-olive-dark);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: color-mix(in oklab, var(--brand-cream), black 4%);
+  --secondary-foreground: var(--brand-brown-dark);
+  --muted: color-mix(in oklab, var(--brand-cream), black 3%);
+  --muted-foreground: color-mix(in oklab, var(--brand-brown-dark), white 40%);
+  --accent: var(--brand-lime);
+  --accent-foreground: var(--brand-olive-dark);
+  --border: color-mix(in oklab, var(--brand-brown-dark), transparent 88%);
+  --input: color-mix(in oklab, var(--brand-brown-dark), transparent 85%);
+  --ring: var(--brand-lime);
+  --radius: 1rem;
+  --sidebar: var(--brand-olive-dark);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: var(--brand-lime);
+  --sidebar-primary-foreground: var(--brand-olive-dark);
+  --sidebar-accent: color-mix(in oklab, white, transparent 85%);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: color-mix(in oklab, white, transparent 88%);
+  --sidebar-ring: var(--brand-lime);
 }
 
 .dark {

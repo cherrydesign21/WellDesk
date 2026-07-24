@@ -17,7 +17,9 @@ export function NotificationsMenu({ items }: { items: NotificationItem[] }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="relative" />}>
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" size="icon" className="relative rounded-full border border-border bg-card" />}
+      >
         <Bell className="h-4.5 w-4.5" />
         {count > 0 && (
           <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">

@@ -4,6 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { insertMealsAndItems } from '@/lib/diet-plan-mutations';
+import { sendEmail } from '@/lib/email';
+import { renderDietPlanReadyEmail } from '@/lib/email-templates/diet-plan-ready';
+import { getSiteUrl } from '@/lib/site';
 import { dietPlanSchema, type DietPlanInput } from '@welldesk/shared';
 
 export async function createClientDietPlan(
@@ -79,6 +82,20 @@ export async function createClientDietPlan(
   }
 
   revalidatePath(`/clients/${clientId}/diet-plans`);
+
+  const { data: clientRow } = await supabase.from('clients').select('full_name, email').eq('id', clientId).single();
+  if (clientRow?.email) {
+    const { subject, html, text } = renderDietPlanReadyEmail({
+      clientFirstName: clientRow.full_name.trim().split(/\s+/)[0] ?? clientRow.full_name,
+      practiceName: profile.practices?.name ?? 'Your dietitian',
+      practiceLogoUrl: profile.practices?.logo_url,
+      practiceAccentColor: profile.practices?.primary_color,
+      planName: data.name,
+      portalUrl: `${getSiteUrl()}/portal`,
+    });
+    await sendEmail({ to: clientRow.email, subject, html, text });
+  }
+
   return { id: plan.id };
 }
 

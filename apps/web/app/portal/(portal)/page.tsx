@@ -5,10 +5,13 @@ import { getPlanWithMeals } from '@/lib/diet-plans';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
 import { PlanView } from '@/components/diet-plans/plan-view';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { MetricRow } from '@/components/metrics/types';
+
+const NEW_PLAN_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default async function PortalPage() {
   const { client } = await requireClient();
@@ -16,7 +19,7 @@ export default async function PortalPage() {
 
   const { data: activePlanRow } = await supabase
     .from('diet_plans')
-    .select('id')
+    .select('id, created_at')
     .eq('client_id', client.id)
     .eq('is_template', false)
     .eq('status', 'active')
@@ -25,6 +28,8 @@ export default async function PortalPage() {
     .maybeSingle();
 
   const currentPlan = activePlanRow ? await getPlanWithMeals(supabase, activePlanRow.id) : null;
+  const nowMs = new Date().getTime();
+  const isNewPlan = activePlanRow ? nowMs - new Date(activePlanRow.created_at).getTime() < NEW_PLAN_WINDOW_MS : false;
 
   const { data: metrics } = await supabase
     .from('health_metrics')
@@ -63,7 +68,10 @@ export default async function PortalPage() {
       <h1 className="text-2xl font-semibold">Hi {client.full_name.split(' ')[0]}</h1>
 
       <div>
-        <h2 className="mb-3 text-lg font-medium">Your Diet Plan</h2>
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-medium">
+          Your Diet Plan
+          {isNewPlan && <Badge variant="success">New</Badge>}
+        </h2>
         {currentPlan ? (
           <PlanView plan={currentPlan} />
         ) : (

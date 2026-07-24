@@ -20,7 +20,8 @@ export default async function BrandingSettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold">Branding</h1>
         <p className="text-sm text-muted-foreground">
-          Shown on your dashboard and on every exported PDF and shared plan.
+          Your logo and heading font appear on your dashboard; your primary color appears on your
+          client portal and every exported PDF or shared plan.
         </p>
       </div>
       <BrandingForm
