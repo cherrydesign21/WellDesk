@@ -51,12 +51,22 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  nativeButton,
+  render,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      render={render}
+      // Base UI defaults nativeButton to true, which assumes the `render`
+      // target is a real <button>. Most of our render props swap in a
+      // <Link> (an <a> tag) instead — mismatched, this caused a Base UI dev
+      // warning AND a real hydration mismatch in production. Default to
+      // false whenever a custom render element is given; callers can still
+      // override explicitly (e.g. a render target that IS a <button>).
+      nativeButton={nativeButton ?? !render}
       {...props}
     />
   )
