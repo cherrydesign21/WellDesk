@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import { healthMetricSchema, type HealthMetricInput, calculateBmi } from '@welldesk/shared';
 import { createHealthMetric } from '@/app/(dashboard)/clients/[clientId]/actions';
 import { Button } from '@/components/ui/button';
@@ -91,7 +92,10 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
         if (!next) form.reset({ recordedAt: nowForInput(), notes: '' });
       }}
     >
-      <DialogTrigger render={<Button />}>Log Metrics</DialogTrigger>
+      <DialogTrigger render={<Button size="lg" />}>
+        <Plus className="h-4 w-4" />
+        Log Metrics
+      </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Log metrics</DialogTitle>

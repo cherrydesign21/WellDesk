@@ -9,29 +9,17 @@ import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_MODE_LABELS,
   type AppointmentStatus,
-  type AppointmentMode,
 } from '@welldesk/shared';
 import { updateAppointmentStatus, deleteAppointment } from '@/app/(dashboard)/appointments/actions';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { ExportMenu } from '@/components/ui/export-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { AppointmentRow } from '@/lib/appointments-export';
 
-const APPOINTMENT_EXPORT_HEADERS = ['Date', 'Time', 'Client', 'Mode', 'Status'];
+export type { AppointmentRow } from '@/lib/appointments-export';
 
 const MODE_ICONS = { video: Video, in_person: UsersIcon, phone: Phone } as const;
-
-export type AppointmentRow = {
-  id: string;
-  client_id: string;
-  client_name: string;
-  local_date: string;
-  local_time: string;
-  status: AppointmentStatus;
-  notes: string | null;
-  mode: AppointmentMode;
-};
 
 export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
   const [isPending, startTransition] = useTransition();
@@ -57,24 +45,8 @@ export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
     return <EmptyState icon={CalendarDays} title="No appointments this month" compact />;
   }
 
-  const exportRows = rows.map((row) => [
-    row.local_date,
-    row.local_time,
-    row.client_name,
-    APPOINTMENT_MODE_LABELS[row.mode],
-    APPOINTMENT_STATUS_LABELS[row.status],
-  ]);
-
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
-        <ExportMenu
-          filenameBase="appointments"
-          title="Appointments"
-          headers={APPOINTMENT_EXPORT_HEADERS}
-          rows={exportRows}
-        />
-      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

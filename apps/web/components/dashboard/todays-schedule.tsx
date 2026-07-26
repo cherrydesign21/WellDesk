@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock, ArrowRight } from 'lucide-react';
 import { APPOINTMENT_MODE_LABELS, type AppointmentMode } from '@welldesk/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,8 +28,12 @@ export function TodaysSchedule({ items }: { items: ScheduleItem[] }) {
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="text-base">Today&apos;s Schedule</CardTitle>
-        <Link href="/appointments" className="text-sm font-medium text-(--success-700) hover:underline">
+        <Link
+          href="/appointments"
+          className="flex items-center gap-1 text-sm font-medium text-(--success-700) hover:underline"
+        >
           View calendar
+          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </CardHeader>
       <CardContent className="space-y-1">

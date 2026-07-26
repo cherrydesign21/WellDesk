@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Video, Users as UsersIcon, Phone } from 'lucide-react';
+import { Video, Users as UsersIcon, Phone, Plus } from 'lucide-react';
 import {
   appointmentSchema,
   type AppointmentInput,
@@ -81,7 +81,16 @@ export function NewAppointmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger ?? <Button />}>{triggerLabel}</DialogTrigger>
+      <DialogTrigger render={trigger ?? <Button size="lg" />}>
+        {trigger ? (
+          triggerLabel
+        ) : (
+          <>
+            <Plus className="h-4 w-4" />
+            {triggerLabel}
+          </>
+        )}
+      </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Schedule appointment</DialogTitle>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -22,8 +22,12 @@ export function NeedsAttention({ items }: { items: AttentionItem[] }) {
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="text-base">Needs Attention</CardTitle>
-        <Link href="/clients" className="text-sm font-medium text-(--success-700) hover:underline">
+        <Link
+          href="/clients"
+          className="flex items-center gap-1 text-sm font-medium text-(--success-700) hover:underline"
+        >
           View all
+          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </CardHeader>
       <CardContent className="space-y-1">

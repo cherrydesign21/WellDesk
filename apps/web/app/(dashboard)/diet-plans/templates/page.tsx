@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { UtensilsCrossed } from 'lucide-react';
+import { Plus, UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +39,10 @@ export default async function DietPlanTemplatesPage() {
           <h1 className="text-2xl font-semibold">Diet Plan Templates</h1>
           <p className="text-sm text-muted-foreground">Reusable plans you can start any client&apos;s plan from.</p>
         </div>
-        <Button render={<Link href="/diet-plans/templates/new" />}>New Template</Button>
+        <Button size="lg" render={<Link href="/diet-plans/templates/new" />}>
+          <Plus className="h-4 w-4" />
+          New Template
+        </Button>
       </div>
 
       <div className="rounded-md border">

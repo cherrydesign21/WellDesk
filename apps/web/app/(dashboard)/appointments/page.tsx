@@ -10,8 +10,10 @@ import {
   type AppointmentMode,
 } from '@welldesk/shared';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
-import { AppointmentsList, type AppointmentRow } from '@/components/appointments/appointments-list';
+import { AppointmentsList } from '@/components/appointments/appointments-list';
+import { toAppointmentExportRows, APPOINTMENT_EXPORT_HEADERS, type AppointmentRow } from '@/lib/appointments-export';
 import { Button } from '@/components/ui/button';
+import { ExportMenu } from '@/components/ui/export-menu';
 
 function pad(n: number) {
   return String(n).padStart(2, '0');
@@ -183,7 +185,15 @@ export default async function AppointmentsPage({
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-medium">This month&apos;s list</h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-medium">This month&apos;s list</h2>
+            <ExportMenu
+              filenameBase="appointments"
+              title="Appointments"
+              headers={APPOINTMENT_EXPORT_HEADERS}
+              rows={toAppointmentExportRows(rows)}
+            />
+          </div>
           <AppointmentsList rows={rows} />
         </div>
       </div>

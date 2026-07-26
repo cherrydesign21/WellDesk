@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import { paymentSchema, type PaymentInput, PAYMENT_MODES } from '@welldesk/shared';
 import { createPayment } from '@/app/(dashboard)/clients/[clientId]/payments/actions';
 import { Button } from '@/components/ui/button';
@@ -64,7 +65,10 @@ export function LogPaymentDialog({ clientId }: { clientId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>Log Payment</DialogTrigger>
+      <DialogTrigger render={<Button size="lg" />}>
+        <Plus className="h-4 w-4" />
+        Log Payment
+      </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Log payment</DialogTitle>

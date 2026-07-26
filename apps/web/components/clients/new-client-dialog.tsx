@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import {
   createClientSchema,
   type CreateClientInput,
@@ -130,7 +131,16 @@ export function NewClientDialog({
         }
       }}
     >
-      <DialogTrigger render={trigger ?? <Button />}>{triggerLabel}</DialogTrigger>
+      <DialogTrigger render={trigger ?? <Button size="lg" />}>
+        {trigger ? (
+          triggerLabel
+        ) : (
+          <>
+            <Plus className="h-4 w-4" />
+            {triggerLabel}
+          </>
+        )}
+      </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Add client</DialogTitle>

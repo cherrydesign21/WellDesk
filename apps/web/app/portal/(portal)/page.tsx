@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { UtensilsCrossed, CalendarDays, Wallet } from 'lucide-react';
+import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
@@ -73,8 +73,12 @@ export default async function PortalPage() {
             Your Diet Plan
             {isNewPlan && <Badge variant="success">New</Badge>}
           </h2>
-          <Link href="/portal/diet-plans" className="text-sm text-muted-foreground hover:underline">
+          <Link
+            href="/portal/diet-plans"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:underline"
+          >
             View all plans
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
         {activePlanRow ? (
