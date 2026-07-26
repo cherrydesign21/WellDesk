@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -87,7 +88,8 @@ export function NewAppointmentDialog({
           <DialogDescription>Book a visit for this client.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(submit)} className="flex flex-1 flex-col overflow-hidden">
+          <DialogBody className="space-y-4">
             {!clientId && (
               <FormField
                 control={form.control}
@@ -211,6 +213,7 @@ export function NewAppointmentDialog({
                 </FormItem>
               )}
             />
+          </DialogBody>
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Scheduling…' : 'Schedule'}

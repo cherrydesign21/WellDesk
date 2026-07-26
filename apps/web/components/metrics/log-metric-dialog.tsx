@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -91,13 +92,14 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
       }}
     >
       <DialogTrigger render={<Button />}>Log Metrics</DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Log metrics</DialogTitle>
           <DialogDescription>Record whatever was measured at this visit — nothing is required.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(submit)} className="flex flex-1 flex-col overflow-hidden">
+          <DialogBody className="space-y-4">
             <FormField
               control={form.control}
               name="recordedAt"
@@ -261,7 +263,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 </FormItem>
               )}
             />
-
+          </DialogBody>
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Saving…' : 'Save entry'}

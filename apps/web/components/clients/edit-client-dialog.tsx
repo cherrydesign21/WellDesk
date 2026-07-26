@@ -12,6 +12,7 @@ import { AvatarUploader } from '@/components/ui/avatar-uploader';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -103,13 +104,14 @@ export function EditClientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit client</DialogTitle>
           <DialogDescription>Update {client?.full_name}&apos;s details.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(submit)} className="flex flex-1 flex-col overflow-hidden">
+          <DialogBody className="space-y-4">
             <AvatarUploader
               key={client?.id}
               practiceId={practiceId}
@@ -219,6 +221,7 @@ export function EditClientDialog({
                 </FormItem>
               )}
             />
+          </DialogBody>
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Saving…' : 'Save changes'}

@@ -45,7 +45,7 @@ export function ClientSearch() {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-md">
+    <div ref={containerRef} className="relative w-full min-w-70 max-w-md">
       <Search className="pointer-events-none absolute top-1/2 left-4 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground" />
       <input
         type="text"

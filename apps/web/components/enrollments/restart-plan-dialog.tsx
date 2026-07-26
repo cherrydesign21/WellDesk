@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -61,7 +62,8 @@ export function RestartPlanDialog({ clientId }: { clientId: string }) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(submit)} className="flex flex-1 flex-col overflow-hidden">
+          <DialogBody className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -152,7 +154,7 @@ export function RestartPlanDialog({ clientId }: { clientId: string }) {
                 )}
               />
             </div>
-
+          </DialogBody>
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Starting…' : 'Start new cycle'}

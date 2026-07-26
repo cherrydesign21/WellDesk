@@ -18,6 +18,7 @@ import { AvatarUploader } from '@/components/ui/avatar-uploader';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -130,13 +131,14 @@ export function NewClientDialog({
       }}
     >
       <DialogTrigger render={trigger ?? <Button />}>{triggerLabel}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Add client</DialogTitle>
           <DialogDescription>Enroll a new client and start their first plan cycle.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(submit)} className="flex flex-1 flex-col overflow-hidden">
+          <DialogBody className="space-y-4">
             <AvatarUploader
               practiceId={practiceId}
               pathPrefix="client-new"
@@ -352,7 +354,7 @@ export function NewClientDialog({
                 </Button>
               </div>
             )}
-
+          </DialogBody>
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? 'Saving…' : 'Add client'}
