@@ -8,8 +8,9 @@ import { registerSchema, GENDERS, type RegisterInput } from '@welldesk/shared';
 import { register } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { FloatingSelect, SelectItem } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 export function RegisterForm() {
   const [isPending, startTransition] = useTransition();
@@ -25,6 +26,7 @@ export function RegisterForm() {
       email: '',
       password: '',
       confirmPassword: '',
+      confirmDietitian: false,
     },
   });
 
@@ -122,6 +124,28 @@ export function RegisterForm() {
                 <FormControl>
                   <Input label="Confirm password" type="password" autoComplete="new-password" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmDietitian"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-start gap-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                      className="mt-0.5"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-normal">
+                    I confirm I am a practicing dietitian or nutritionist. WellDesk accounts are for practitioners
+                    only — your clients get their own portal access once you invite them.
+                  </FormLabel>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

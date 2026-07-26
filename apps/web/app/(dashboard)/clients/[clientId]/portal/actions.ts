@@ -1,10 +1,25 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentProfile } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/site';
+
+// Supabase's admin API has no "get user by email" lookup, only paginated
+// listing — only called on the rare email_exists conflict path below, capped
+// well above any realistic user base for now.
+async function findUserIdByEmail(admin: SupabaseClient, email: string): Promise<string | null> {
+  const target = email.toLowerCase();
+  for (let page = 1; page <= 10; page++) {
+    const { data } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    const match = data.users.find((u) => u.email?.toLowerCase() === target);
+    if (match) return match.id;
+    if (data.users.length < 200) return null;
+  }
+  return null;
+}
 
 export async function inviteClientToPortal(clientId: string) {
   const supabase = await createSupabaseClient();
@@ -41,6 +56,29 @@ export async function inviteClientToPortal(clientId: string) {
   });
 
   if (createError || !created.user) {
+    if (createError?.code === 'email_exists') {
+      const existingUserId = await findUserIdByEmail(admin, client.email);
+      if (existingUserId) {
+        // Service role, not the RLS-scoped client — this profile is very
+        // likely in a different practice than the one making this request.
+        const { data: existingProfile } = await admin
+          .from('profiles')
+          .select('id')
+          .eq('id', existingUserId)
+          .maybeSingle();
+
+        if (existingProfile) {
+          return {
+            error:
+              "This email belongs to an existing WellDesk dietitian account and can't be given client portal access. Use a different email for this client.",
+          };
+        }
+      }
+      return {
+        error:
+          "This email already has client portal access under another practice on WellDesk. Use a different email address for this client's portal access.",
+      };
+    }
     return { error: createError?.message ?? 'Failed to create portal account' };
   }
 

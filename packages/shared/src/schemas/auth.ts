@@ -16,6 +16,9 @@ export const registerSchema = z
     email: z.string().trim().email('Enter a valid email'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmDietitian: z.boolean().refine((v) => v === true, {
+      message: 'You must confirm you are a practicing dietitian or nutritionist to sign up',
+    }),
   })
   .refine((v) => v.password === v.confirmPassword, {
     message: 'Passwords do not match',

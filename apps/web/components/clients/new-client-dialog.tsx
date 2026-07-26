@@ -43,6 +43,11 @@ import {
 
 const today = new Date().toISOString().slice(0, 10);
 
+function matchedFieldsLabel(fields: ('phone' | 'email')[]) {
+  if (fields.length === 2) return 'phone number and email';
+  return fields[0] === 'email' ? 'email' : 'phone number';
+}
+
 export function NewClientDialog({
   practiceId,
   trigger,
@@ -54,11 +59,11 @@ export function NewClientDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [duplicate, setDuplicate] = useState<{
-    id: string;
-    full_name: string;
-    matchedFields: ('phone' | 'email')[];
-  } | null>(null);
+  const [duplicate, setDuplicate] = useState<
+    | { scope: 'same_practice'; id: string; full_name: string; matchedFields: ('phone' | 'email')[] }
+    | { scope: 'other_practice'; matchedFields: ('phone' | 'email')[] }
+    | null
+  >(null);
 
   const form = useForm<CreateClientInput>({
     resolver: zodResolver(createClientSchema),
@@ -323,15 +328,18 @@ export function NewClientDialog({
 
             {duplicate && (
               <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-                <p>
-                  A client named <strong>{duplicate.full_name}</strong> already has this{' '}
-                  {duplicate.matchedFields.length === 2
-                    ? 'phone number and email'
-                    : duplicate.matchedFields[0] === 'email'
-                      ? 'email'
-                      : 'phone number'}
-                  .
-                </p>
+                {duplicate.scope === 'same_practice' ? (
+                  <p>
+                    A client named <strong>{duplicate.full_name}</strong> already has this{' '}
+                    {matchedFieldsLabel(duplicate.matchedFields)}.
+                  </p>
+                ) : (
+                  <p>
+                    This {matchedFieldsLabel(duplicate.matchedFields)}{' '}
+                    is already associated with a client at another practice on WellDesk. They may already be
+                    working with someone else — you can still add them here if that&apos;s expected.
+                  </p>
+                )}
                 <Button
                   type="button"
                   size="sm"

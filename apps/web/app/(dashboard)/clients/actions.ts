@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentProfile } from '@/lib/auth';
 import {
   createClientSchema,
@@ -61,7 +62,30 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
       const matchedFields: ('phone' | 'email')[] = [];
       if (data.phone && existing.phone === data.phone) matchedFields.push('phone');
       if (data.email && existing.email?.toLowerCase() === data.email.toLowerCase()) matchedFields.push('email');
-      return { duplicate: { id: existing.id, full_name: existing.full_name, matchedFields } };
+      return {
+        duplicate: { scope: 'same_practice' as const, id: existing.id, full_name: existing.full_name, matchedFields },
+      };
+    }
+
+    // Not a duplicate within this practice — check across every other practice
+    // too (service role, since RLS would otherwise hide other tenants' rows).
+    // Seeing the same dietitian twice is fine; this is just a heads-up that
+    // the person may already be a client elsewhere, so we never reveal which
+    // practice or their name — only that the phone/email matches.
+    const admin = createAdminClient();
+    const { data: elsewhere } = await admin
+      .from('clients')
+      .select('phone, email')
+      .neq('practice_id', profile.practice_id)
+      .or(orFilters.join(','))
+      .limit(1)
+      .maybeSingle();
+
+    if (elsewhere) {
+      const matchedFields: ('phone' | 'email')[] = [];
+      if (data.phone && elsewhere.phone === data.phone) matchedFields.push('phone');
+      if (data.email && elsewhere.email?.toLowerCase() === data.email.toLowerCase()) matchedFields.push('email');
+      return { duplicate: { scope: 'other_practice' as const, matchedFields } };
     }
   }
 
