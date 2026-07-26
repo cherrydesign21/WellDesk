@@ -48,11 +48,19 @@ export async function inviteClientToPortal(clientId: string) {
   // on (the browser that opens the invite is often not the one that started
   // it), so create the account directly and send a PKCE-compatible password
   // recovery email instead — same accept-and-set-password experience.
+  // practice_name/dietitian_name are exposed to the "Reset Password" email
+  // template as {{ .Data.practice_name }} / {{ .Data.dietitian_name }}, since
+  // that template is what actually gets sent for portal invites.
   const admin = createAdminClient();
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email: client.email,
     email_confirm: true,
-    user_metadata: { full_name: client.full_name, portal_client: true },
+    user_metadata: {
+      full_name: client.full_name,
+      portal_client: true,
+      practice_name: result.profile.practices?.name ?? 'WellDesk',
+      dietitian_name: result.profile.full_name,
+    },
   });
 
   if (createError || !created.user) {
