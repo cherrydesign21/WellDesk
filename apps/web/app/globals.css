@@ -281,3 +281,20 @@
     cursor: pointer;
   }
 }
+
+/* Printing any dashboard/portal page (e.g. a client's diet plan) — the app
+   shell is a fixed-height flex layout with its own internal scroll, which
+   would otherwise clip printed output to a single page and print the
+   sidebar/header alongside it. */
+@media print {
+  .app-theme aside,
+  .app-theme > header,
+  .app-theme header {
+    display: none !important;
+  }
+  .app-theme,
+  .app-theme main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

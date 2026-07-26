@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentProfile } from '@/lib/auth';
+import { getCurrentProfile, getCurrentClient } from '@/lib/auth';
 import { getPlanWithMeals } from '@/lib/diet-plans';
 import { renderPlanPdf } from '@/lib/exports/pdf';
 import { renderPlanXlsx } from '@/lib/exports/xlsx';
@@ -13,8 +13,9 @@ export async function GET(
   const { planId, format } = await params;
 
   const supabase = await createClient();
-  const result = await getCurrentProfile(supabase);
-  if (!result) {
+  const profileResult = await getCurrentProfile(supabase);
+  const clientResult = profileResult ? null : await getCurrentClient(supabase);
+  if (!profileResult && !clientResult) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -22,8 +23,15 @@ export async function GET(
   if (!plan) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
+  // A client session may only export their own plan — a dietitian's own RLS
+  // scoping (tenant_isolation_diet_plans) already covers the profile case.
+  if (clientResult && plan.client_id !== clientResult.client.id) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
-  const practice = result.profile.practices ?? { name: 'WellDesk', tagline: null, primary_color: null };
+  const practice = profileResult
+    ? (profileResult.profile.practices ?? { name: 'WellDesk', tagline: null, primary_color: null })
+    : (clientResult!.client.practices ?? { name: 'WellDesk', tagline: null, primary_color: null });
   const filename = plan.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'diet-plan';
 
   if (format === 'pdf') {

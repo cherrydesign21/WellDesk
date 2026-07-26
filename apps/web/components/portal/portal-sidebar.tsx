@@ -1,10 +1,13 @@
 'use client';
 
-import { LayoutDashboard, Settings } from 'lucide-react';
+import { LayoutDashboard, Settings, UtensilsCrossed } from 'lucide-react';
 import { AppSidebar } from '@/components/shell/app-sidebar';
 import type { SidebarNavItem } from '@/components/shell/app-sidebar-nav';
 
-const NAV_ITEMS: SidebarNavItem[] = [{ href: '/portal', label: 'Dashboard', icon: LayoutDashboard }];
+const NAV_ITEMS: SidebarNavItem[] = [
+  { href: '/portal', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/portal/diet-plans', label: 'Diet Plans', icon: UtensilsCrossed },
+];
 const BOTTOM_ITEMS: SidebarNavItem[] = [{ href: '/portal/account', label: 'Account', icon: Settings }];
 
 export function PortalSidebar() {

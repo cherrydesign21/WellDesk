@@ -1,12 +1,12 @@
+import Link from 'next/link';
 import { UtensilsCrossed, CalendarDays, Wallet } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
-import { getPlanWithMeals } from '@/lib/diet-plans';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
-import { PlanView } from '@/components/diet-plans/plan-view';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,7 +20,7 @@ export default async function PortalPage() {
 
   const { data: activePlanRow } = await supabase
     .from('diet_plans')
-    .select('id, created_at')
+    .select('id, name, plan_date, version, created_at')
     .eq('client_id', client.id)
     .eq('is_template', false)
     .eq('status', 'active')
@@ -28,7 +28,6 @@ export default async function PortalPage() {
     .limit(1)
     .maybeSingle();
 
-  const currentPlan = activePlanRow ? await getPlanWithMeals(supabase, activePlanRow.id) : null;
   const nowMs = new Date().getTime();
   const isNewPlan = activePlanRow ? nowMs - new Date(activePlanRow.created_at).getTime() < NEW_PLAN_WINDOW_MS : false;
 
@@ -69,12 +68,29 @@ export default async function PortalPage() {
       <h1 className="text-2xl font-semibold">Hi {client.full_name.split(' ')[0]}</h1>
 
       <div>
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-medium">
-          Your Diet Plan
-          {isNewPlan && <Badge variant="success">New</Badge>}
-        </h2>
-        {currentPlan ? (
-          <PlanView plan={currentPlan} />
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-medium">
+            Your Diet Plan
+            {isNewPlan && <Badge variant="success">New</Badge>}
+          </h2>
+          <Link href="/portal/diet-plans" className="text-sm text-muted-foreground hover:underline">
+            View all plans
+          </Link>
+        </div>
+        {activePlanRow ? (
+          <Card>
+            <CardContent className="flex items-center justify-between gap-4 pt-4">
+              <div>
+                <p className="font-medium">{activePlanRow.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {activePlanRow.plan_date} · v{activePlanRow.version}
+                </p>
+              </div>
+              <Button size="sm" render={<Link href={`/portal/diet-plans/${activePlanRow.id}`} />}>
+                View chart
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <EmptyState icon={UtensilsCrossed} title="No active diet plan yet" compact />
         )}
