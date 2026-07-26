@@ -26,8 +26,8 @@ export function SetPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome</CardTitle>
-        <CardDescription>Set a password for your portal account.</CardDescription>
+        <CardTitle>Set your password</CardTitle>
+        <CardDescription>Choose a new password for your portal account.</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
         <CardContent className="space-y-4">

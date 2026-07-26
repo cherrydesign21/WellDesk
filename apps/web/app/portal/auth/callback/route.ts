@@ -13,5 +13,10 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/portal/login?error=auth_callback_failed`);
+  // No `code` means Supabase fell back to the implicit flow (e.g. the link
+  // was opened on a different browser/device than the one that requested
+  // it) and appended the session as a `#access_token=...` fragment instead,
+  // which never reaches the server — hand off to the client page that reads
+  // it directly (shared with the dietitian-side callback).
+  return NextResponse.redirect(`${origin}/auth/callback/complete?next=${encodeURIComponent('/portal/set-password')}`);
 }

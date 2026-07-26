@@ -14,5 +14,11 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
+  // No `code` in the query string usually means the link was opened on a
+  // different browser/device than the one that requested it, so there was
+  // no matching PKCE code_verifier cookie — Supabase falls back to the
+  // implicit flow and appends the session as a `#access_token=...` URL
+  // fragment instead. Fragments never reach the server, so hand off to a
+  // client page that can read it directly.
+  return NextResponse.redirect(`${origin}/auth/callback/complete?next=${encodeURIComponent(next)}`);
 }
