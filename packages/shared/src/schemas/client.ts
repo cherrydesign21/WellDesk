@@ -31,3 +31,14 @@ export const createClientSchema = clientSchema.extend({
 });
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;
+
+export const clientAccountSettingsSchema = z.object({
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+\-\s()]{7,20}$/, 'Enter a valid phone number')
+    .optional()
+    .or(z.literal('')),
+});
+
+export type ClientAccountSettingsInput = z.infer<typeof clientAccountSettingsSchema>;

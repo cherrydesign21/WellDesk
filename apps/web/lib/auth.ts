@@ -55,7 +55,9 @@ export async function getCurrentClient(supabase: SupabaseClient) {
 
   const { data: client } = await supabase
     .from('clients')
-    .select('id, full_name, email, practice_id, practices(name, tagline, logo_url, primary_color, timezone)')
+    .select(
+      'id, full_name, email, phone, photo_url, practice_id, practices(name, tagline, logo_url, primary_color, timezone)'
+    )
     .eq('user_id', user.id)
     .single();
 

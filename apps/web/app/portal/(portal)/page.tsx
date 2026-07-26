@@ -5,6 +5,7 @@ import { getPlanWithMeals } from '@/lib/diet-plans';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
 import { PlanView } from '@/components/diet-plans/plan-view';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
+import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -80,7 +81,10 @@ export default async function PortalPage() {
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-medium">Your Progress</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-medium">Your Progress</h2>
+          <PortalLogMetricDialog />
+        </div>
         <MetricsChart rows={rows} />
       </div>
 
