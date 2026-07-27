@@ -76,7 +76,7 @@ export function AppSidebar({
         )}
       </Link>
 
-      <AppSidebarNav items={navItems} bottomItems={bottomItems} collapsed={collapsed} />
+      <AppSidebarNav items={navItems} bottomItems={bottomItems} collapsed={collapsed} homeHref={homeHref} />
 
       <button
         type="button"

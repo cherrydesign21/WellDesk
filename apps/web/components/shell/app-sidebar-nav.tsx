@@ -6,13 +6,25 @@ import type { LucideIcon } from 'lucide-react';
 
 export type SidebarNavItem = { href: string; label: string; icon: LucideIcon };
 
-function isActiveHref(pathname: string, href: string) {
-  return href === '/' ? pathname === '/' : pathname.startsWith(href);
+// A nav item whose href IS the section's home route (e.g. "/portal", or "/"
+// for the dashboard) needs an exact match — every other route in that
+// section is nested under it, so a plain startsWith would also light up
+// "Dashboard" while looking at "/portal/diet-plans".
+function isActiveHref(pathname: string, href: string, homeHref: string) {
+  return href === homeHref ? pathname === href : pathname.startsWith(href);
 }
 
-function NavLink({ item, collapsed }: { item: SidebarNavItem; collapsed: boolean }) {
+function NavLink({
+  item,
+  collapsed,
+  homeHref,
+}: {
+  item: SidebarNavItem;
+  collapsed: boolean;
+  homeHref: string;
+}) {
   const pathname = usePathname();
-  const isActive = isActiveHref(pathname, item.href);
+  const isActive = isActiveHref(pathname, item.href, homeHref);
   const Icon = item.icon;
   return (
     <Link
@@ -36,20 +48,22 @@ export function AppSidebarNav({
   items,
   bottomItems,
   collapsed = false,
+  homeHref = '/',
 }: {
   items: SidebarNavItem[];
   bottomItems?: SidebarNavItem[];
   collapsed?: boolean;
+  homeHref?: string;
 }) {
   return (
     <nav className="flex flex-1 flex-col gap-1">
       {items.map((item) => (
-        <NavLink key={item.href} item={item} collapsed={collapsed} />
+        <NavLink key={item.href} item={item} collapsed={collapsed} homeHref={homeHref} />
       ))}
       {bottomItems && bottomItems.length > 0 && (
         <div className="mt-auto space-y-1">
           {bottomItems.map((item) => (
-            <NavLink key={item.href} item={item} collapsed={collapsed} />
+            <NavLink key={item.href} item={item} collapsed={collapsed} homeHref={homeHref} />
           ))}
         </div>
       )}

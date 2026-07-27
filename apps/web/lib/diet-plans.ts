@@ -19,6 +19,7 @@ export type PlanWithMeals = {
   id: string;
   name: string;
   plan_date: string;
+  created_at: string;
   version: number;
   is_template: boolean;
   status: string;
@@ -28,7 +29,7 @@ export type PlanWithMeals = {
 };
 
 const PLAN_SELECT =
-  'id, name, plan_date, version, is_template, status, share_token, client_id, diet_plan_meals(id, slot_name, slot_order, diet_plan_meal_items(food_item, quantity, calories, notes, item_order))';
+  'id, name, plan_date, created_at, version, is_template, status, share_token, client_id, diet_plan_meals(id, slot_name, slot_order, diet_plan_meal_items(food_item, quantity, calories, notes, item_order))';
 
 export async function getPlanWithMeals(supabase: SupabaseClient, planId: string): Promise<PlanWithMeals | null> {
   const { data } = await supabase.from('diet_plans').select(PLAN_SELECT).eq('id', planId).single();

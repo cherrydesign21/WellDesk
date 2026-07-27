@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { UtensilsCrossed } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
+import { utcIsoToLocalTime } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,10 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 export default async function PortalDietPlansPage() {
   const { client } = await requireClient();
   const supabase = await createClient();
+  const timezone = client.practices?.timezone ?? 'Asia/Kolkata';
 
   const { data: plans } = await supabase
     .from('diet_plans')
-    .select('id, name, plan_date, version, status')
+    .select('id, name, plan_date, created_at, version, status')
     .eq('client_id', client.id)
     .order('created_at', { ascending: false });
 
@@ -48,7 +50,9 @@ export default async function PortalDietPlansPage() {
                     {plan.name}
                   </Link>
                 </TableCell>
-                <TableCell>{plan.plan_date}</TableCell>
+                <TableCell>
+                  {plan.plan_date} · {utcIsoToLocalTime(plan.created_at, timezone)}
+                </TableCell>
                 <TableCell>v{plan.version}</TableCell>
                 <TableCell>
                   <Badge variant={plan.status === 'active' ? 'default' : 'outline'} className="capitalize">

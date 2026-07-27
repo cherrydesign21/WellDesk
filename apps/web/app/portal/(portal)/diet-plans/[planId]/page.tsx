@@ -21,7 +21,7 @@ export default async function PortalDietPlanPage({ params }: { params: Promise<{
         ← Back to plans
       </Link>
 
-      <PlanView plan={plan} />
+      <PlanView plan={plan} timezone={client.practices?.timezone ?? 'Asia/Kolkata'} />
 
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Button variant="outline" size="sm" render={<a href={`/api/diet-plans/${planId}/export/pdf`} />}>

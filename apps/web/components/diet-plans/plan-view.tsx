@@ -1,12 +1,14 @@
+import { utcIsoToLocalTime } from '@welldesk/shared';
 import type { PlanWithMeals } from '@/lib/diet-plans';
 
-export function PlanView({ plan }: { plan: PlanWithMeals }) {
+export function PlanView({ plan, timezone }: { plan: PlanWithMeals; timezone?: string }) {
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">{plan.name}</h2>
         <p className="text-sm text-muted-foreground">
           {plan.plan_date}
+          {timezone ? ` · ${utcIsoToLocalTime(plan.created_at, timezone)}` : ''}
           {!plan.is_template ? ` · v${plan.version}` : ''}
         </p>
       </div>
