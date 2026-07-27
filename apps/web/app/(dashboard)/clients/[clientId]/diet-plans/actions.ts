@@ -102,6 +102,52 @@ export async function createClientDietPlan(
   return { id: plan.id };
 }
 
+export async function updateClientDietPlan(clientId: string, planId: string, values: DietPlanInput) {
+  const parsed = dietPlanSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+  const data = parsed.data;
+
+  const supabase = await createSupabaseClient();
+  const result = await getCurrentProfile(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+
+  const { data: existingPlan } = await supabase
+    .from('diet_plans')
+    .select('id, client_id')
+    .eq('id', planId)
+    .maybeSingle();
+  if (!existingPlan || existingPlan.client_id !== clientId) {
+    return { error: 'Plan not found' };
+  }
+
+  const { error: updateError } = await supabase
+    .from('diet_plans')
+    .update({ name: data.name, plan_date: data.planDate })
+    .eq('id', planId);
+  if (updateError) {
+    return { error: updateError.message };
+  }
+
+  const { error: deleteError } = await supabase.from('diet_plan_meals').delete().eq('diet_plan_id', planId);
+  if (deleteError) {
+    return { error: deleteError.message };
+  }
+
+  const insertError = await insertMealsAndItems(supabase, planId, data.meals);
+  if (insertError) {
+    return { error: insertError };
+  }
+
+  revalidatePath(`/clients/${clientId}/diet-plans`);
+  revalidatePath(`/clients/${clientId}/diet-plans/${planId}`);
+
+  return { id: planId };
+}
+
 export async function getOrCreateShareLink(planId: string) {
   const supabase = await createSupabaseClient();
 

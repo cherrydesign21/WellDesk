@@ -32,6 +32,9 @@ export default async function ClientDietPlanPage({
       <PlanView plan={plan} />
 
       <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" render={<Link href={`/clients/${clientId}/diet-plans/${planId}/edit`} />}>
+          Edit
+        </Button>
         <Button variant="outline" size="sm" render={<a href={`/api/diet-plans/${planId}/export/pdf`} />}>
           Export PDF
         </Button>
