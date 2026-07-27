@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import { healthMetricSchema, type HealthMetricInput, calculateBmi } from '@welldesk/shared';
 import { createClientHealthMetric } from '@/app/portal/actions';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,13 @@ function numberField(
   );
 }
 
-export function PortalLogMetricDialog() {
+export function PortalLogMetricDialog({
+  trigger,
+  triggerLabel = "Log today's numbers",
+}: {
+  trigger?: React.ReactElement;
+  triggerLabel?: React.ReactNode;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -91,7 +98,16 @@ export function PortalLogMetricDialog() {
         if (!next) form.reset({ recordedAt: nowForInput(), notes: '' });
       }}
     >
-      <DialogTrigger render={<Button />}>Log today&apos;s numbers</DialogTrigger>
+      <DialogTrigger render={trigger ?? <Button size="lg" />}>
+        {trigger ? (
+          triggerLabel
+        ) : (
+          <>
+            <Plus className="h-4 w-4" />
+            {triggerLabel}
+          </>
+        )}
+      </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Log today&apos;s numbers</DialogTitle>

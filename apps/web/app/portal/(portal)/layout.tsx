@@ -1,7 +1,9 @@
+import { Plus } from 'lucide-react';
 import { requireClient } from '@/lib/auth';
 import { portalLogout } from '@/app/portal/actions';
 import { AppThemeBody } from '@/components/shell/app-theme-body';
 import { PortalSidebar } from '@/components/portal/portal-sidebar';
+import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
 import { Button } from '@/components/ui/button';
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -38,6 +40,16 @@ export default async function PortalLayout({ children }: { children: React.React
 
         <main className="min-h-0 flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+
+      <PortalLogMetricDialog
+        trigger={
+          <Button
+            size="icon"
+            className="fixed right-6 bottom-6 z-40 h-14 w-14 rounded-full shadow-lg print:hidden"
+          />
+        }
+        triggerLabel={<Plus className="h-6 w-6" />}
+      />
     </div>
   );
 }

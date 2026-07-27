@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight, Mail, Phone } from 'lucide-react';
+import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight, Mail, Phone, Activity } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
@@ -86,6 +86,21 @@ export default async function PortalPage() {
         )}
       </div>
 
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="flex flex-wrap items-center justify-between gap-4 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Activity className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-medium">How are you doing today?</p>
+              <p className="text-sm text-muted-foreground">Log your weight, BP, sugar or other numbers in seconds.</p>
+            </div>
+          </div>
+          <PortalLogMetricDialog />
+        </CardContent>
+      </Card>
+
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-medium">
@@ -120,10 +135,7 @@ export default async function PortalPage() {
       </div>
 
       <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-medium">Your Progress</h2>
-          <PortalLogMetricDialog />
-        </div>
+        <h2 className="mb-3 text-lg font-medium">Your Progress</h2>
         <MetricsChart rows={rows} />
       </div>
 
