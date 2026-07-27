@@ -16,6 +16,7 @@ import { TodaysSchedule, type ScheduleItem } from '@/components/dashboard/todays
 import { NeedsAttention, type AttentionItem } from '@/components/dashboard/needs-attention';
 import { ClientProgressTable, type ProgressRow } from '@/components/dashboard/client-progress-table';
 import { QuickActionsRow } from '@/components/dashboard/quick-actions';
+import { DashboardCharts } from '@/components/dashboard/dashboard-charts';
 
 type Enrollment = { plan_type: string; expiry_date: string; status: string; cycle_number: number };
 type ClientLite = {
@@ -138,15 +139,30 @@ export default async function DashboardPage() {
   const currentMonthKey = now.toISOString().slice(0, 7);
   const newThisMonth = clients.filter((c) => c.created_at?.slice(0, 7) === currentMonthKey).length;
 
-  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const firstOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString().slice(0, 10);
 
-  const [{ data: monthPayments }, { data: prevMonthPayments }] = await Promise.all([
-    supabase.from('payments').select('amount').gte('payment_date', firstOfMonth),
-    supabase.from('payments').select('amount').gte('payment_date', firstOfPrevMonth).lt('payment_date', firstOfMonth),
-  ]);
-  const revenueThisMonth = (monthPayments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
-  const revenuePrevMonth = (prevMonthPayments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const { data: revenueRows } = await supabase.from('payments').select('amount, payment_date').gte('payment_date', sixMonthsAgo);
+
+  const revenueByMonthKey = new Map<string, number>();
+  const monthKeys: string[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthKeys.push(key);
+    revenueByMonthKey.set(key, 0);
+  }
+  for (const p of revenueRows ?? []) {
+    const key = p.payment_date.slice(0, 7);
+    if (revenueByMonthKey.has(key)) revenueByMonthKey.set(key, (revenueByMonthKey.get(key) ?? 0) + Number(p.amount));
+  }
+
+  const revenueTrend = monthKeys.map((key) => ({
+    month: new Date(`${key}-01T00:00:00`).toLocaleString('en-US', { month: 'short' }),
+    amount: revenueByMonthKey.get(key) ?? 0,
+  }));
+
+  const revenueThisMonth = revenueByMonthKey.get(monthKeys[5]) ?? 0;
+  const revenuePrevMonth = revenueByMonthKey.get(monthKeys[4]) ?? 0;
   const revenueChangePct =
     revenuePrevMonth > 0 ? Math.round(((revenueThisMonth - revenuePrevMonth) / revenuePrevMonth) * 100) : null;
 
@@ -276,6 +292,26 @@ export default async function DashboardPage() {
     };
   });
 
+  const statusCounts: Record<ClientStatus, number> = { active: 0, expired: 0, paused: 0, archived: 0 };
+  for (const c of clients) {
+    const status = getEffectiveClientStatus(c.status as ClientStatus, latestEnrollment(c.enrollments));
+    statusCounts[status] += 1;
+  }
+  const statusBreakdown = [
+    { name: 'Active', value: statusCounts.active, color: 'var(--chart-2)' },
+    { name: 'Expired', value: statusCounts.expired, color: 'var(--chart-5)' },
+    { name: 'Paused', value: statusCounts.paused, color: 'var(--chart-3)' },
+    { name: 'Archived', value: statusCounts.archived, color: 'var(--chart-4)' },
+  ];
+
+  const adherenceCounts = { on_track: 0, slipping: 0, at_risk: 0 };
+  for (const r of progressRows) adherenceCounts[r.adherence] += 1;
+  const adherenceBreakdown = [
+    { name: 'On Track', value: adherenceCounts.on_track, color: 'var(--chart-2)' },
+    { name: 'Slipping', value: adherenceCounts.slipping, color: 'var(--chart-3)' },
+    { name: 'At Risk', value: adherenceCounts.at_risk, color: 'var(--chart-5)' },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -325,6 +361,8 @@ export default async function DashboardPage() {
         practiceId={result.profile.practice_id}
         clients={clients.map((c) => ({ id: c.id, full_name: c.full_name }))}
       />
+
+      <DashboardCharts revenueTrend={revenueTrend} statusBreakdown={statusBreakdown} adherenceBreakdown={adherenceBreakdown} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <TodaysSchedule items={todaysAppointments} />
