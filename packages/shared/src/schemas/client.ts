@@ -16,6 +16,7 @@ export const clientSchema = z.object({
   address: z.string().trim().max(500).optional().nullable(),
   notes: z.string().trim().max(2000).optional().nullable(),
   photoUrl: z.string().url().optional().nullable(),
+  dietType: z.string().trim().max(200).optional().nullable(),
 });
 
 export type ClientInput = z.infer<typeof clientSchema>;

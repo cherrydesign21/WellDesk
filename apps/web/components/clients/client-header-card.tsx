@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, MessageSquare, PhoneCall, FileText, UtensilsCrossed } from 'lucide-react';
+import { Mail, Phone, MessageSquare, PhoneCall, FileText, UtensilsCrossed, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
@@ -16,6 +16,10 @@ function calculateAge(dob: string | null): number | null {
   return age;
 }
 
+function ToolbarDivider() {
+  return <div className="h-5 w-px shrink-0 bg-border" />;
+}
+
 export function ClientHeaderCard({
   client,
   effectiveStatus,
@@ -30,6 +34,7 @@ export function ClientHeaderCard({
     gender: string | null;
     dob: string | null;
     photo_url: string | null;
+    diet_type: string | null;
     user_id: string | null;
   };
   effectiveStatus: string;
@@ -48,10 +53,10 @@ export function ClientHeaderCard({
             <img
               src={client.photo_url}
               alt=""
-              className="h-20 w-20 rounded-full object-cover ring-1 ring-foreground/10"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-foreground/10"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-primary-foreground ring-1 ring-foreground/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground ring-1 ring-foreground/10">
               {initial}
             </div>
           )}
@@ -78,7 +83,7 @@ export function ClientHeaderCard({
               </span>
             )}
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-x-8 gap-y-1 text-sm sm:flex sm:gap-x-8">
+          <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2 text-sm sm:flex sm:flex-wrap sm:gap-x-8">
             {age !== null && (
               <div>
                 <p className="text-xs text-muted-foreground">Age</p>
@@ -95,15 +100,21 @@ export function ClientHeaderCard({
               <p className="text-xs text-muted-foreground">Member since</p>
               <p className="font-medium">{memberSince}</p>
             </div>
+            {client.diet_type && (
+              <div>
+                <p className="text-xs text-muted-foreground">Diet type</p>
+                <p className="font-medium">{client.diet_type}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col items-end gap-3">
+        <div className="flex h-11 items-center gap-1 rounded-[10px] border bg-muted/40 p-[5px]">
           {client.email && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon-sm"
               title="Message"
               render={<a href={`mailto:${client.email}`} />}
@@ -113,20 +124,31 @@ export function ClientHeaderCard({
             </Button>
           )}
           {client.phone && (
-            <Button variant="outline" size="icon-sm" title="Call" render={<a href={`tel:${client.phone}`} />}>
+            <Button variant="ghost" size="icon-sm" title="Call" render={<a href={`tel:${client.phone}`} />}>
               <PhoneCall className="h-4 w-4" />
               <span className="sr-only">Call</span>
             </Button>
           )}
-          <Button variant="outline" size="sm" render={<a href={`/api/clients/${client.id}/report-card`} />}>
+          {(client.email || client.phone) && <ToolbarDivider />}
+          <Button variant="ghost" size="sm" render={<a href={`/api/clients/${client.id}/report-card`} />}>
             <FileText className="h-4 w-4" />
             Report Card
           </Button>
-          <Button variant="outline" size="sm" render={<Link href={`/clients/${client.id}/diet-plans`} />}>
+          <Button variant="ghost" size="sm" render={<Link href={`/clients/${client.id}/diet-plans`} />}>
             <UtensilsCrossed className="h-4 w-4" />
             Diet Plans
           </Button>
-          <NewAppointmentDialog clientId={client.id} triggerLabel="New Appointment" />
+          <ToolbarDivider />
+          <NewAppointmentDialog
+            clientId={client.id}
+            trigger={<Button size="sm" />}
+            triggerLabel={
+              <>
+                <Plus className="h-3.5 w-3.5" />
+                New Appointment
+              </>
+            }
+          />
         </div>
         <PortalAccessCard clientId={client.id} hasPortalAccess={!!client.user_id} />
       </div>

@@ -101,6 +101,7 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
       address: data.address || null,
       notes: data.notes || null,
       photo_url: data.photoUrl || null,
+      diet_type: data.dietType || null,
       created_by: profile.id,
     })
     .select('id')
@@ -156,6 +157,7 @@ export async function updateClient(clientId: string, values: ClientInput) {
       address: data.address || null,
       notes: data.notes || null,
       photo_url: data.photoUrl || null,
+      diet_type: data.dietType || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', clientId);

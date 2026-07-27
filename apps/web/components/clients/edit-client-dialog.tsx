@@ -51,6 +51,7 @@ export type EditableClient = {
   address: string | null;
   notes: string | null;
   photo_url: string | null;
+  diet_type: string | null;
 };
 
 export function EditClientDialog({
@@ -77,6 +78,7 @@ export function EditClientDialog({
       address: '',
       notes: '',
       photoUrl: null,
+      dietType: '',
     },
   });
 
@@ -91,6 +93,7 @@ export function EditClientDialog({
         address: client.address ?? '',
         notes: client.notes ?? '',
         photoUrl: client.photo_url ?? null,
+        dietType: client.diet_type ?? '',
       });
     }
   }, [client, form]);
@@ -213,6 +216,18 @@ export function EditClientDialog({
                   <FormLabel>Address</FormLabel>
                   <FormControl>
                     <Textarea rows={2} {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="dietType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input label="Diet type" placeholder="e.g. Low-Carb, Vegetarian" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

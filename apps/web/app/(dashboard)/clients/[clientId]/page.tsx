@@ -61,6 +61,10 @@ export default async function ClientDetailPage({
 
   if (!client) notFound();
 
+  // Queried separately so a not-yet-migrated diet_type column can't 404 the
+  // whole client page — falls back to null if it fails.
+  const { data: dietTypeRow } = await supabase.from('clients').select('diet_type').eq('id', clientId).maybeSingle();
+
   const { data: enrollments } = await supabase
     .from('enrollments')
     .select('id, cycle_number, plan_type, start_date, expiry_date, status, plan_amount')
@@ -196,7 +200,7 @@ export default async function ClientDetailPage({
       </Link>
 
       <ClientHeaderCard
-        client={client}
+        client={{ ...client, diet_type: dietTypeRow?.diet_type ?? null }}
         effectiveStatus={effectiveStatus}
         statusVariant={statusVariant(effectiveStatus)}
         memberSince={new Date(client.created_at).toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' })}

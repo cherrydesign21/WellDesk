@@ -57,8 +57,14 @@ export default async function ClientsPage({
     }
   }
 
+  // Queried separately so a not-yet-migrated diet_type column can't blank
+  // the entire clients list — falls back to null per client if it fails.
+  const { data: dietTypeRows } = await supabase.from('clients').select('id, diet_type');
+  const dietTypeById = new Map((dietTypeRows ?? []).map((r) => [r.id, r.diet_type as string | null]));
+
   let clients: ClientRow[] = (clientsRaw ?? []).map((c) => ({
     ...(c as unknown as ClientRow),
+    diet_type: dietTypeById.get(c.id) ?? null,
     effective_status: getEffectiveClientStatus(c.status as ClientStatus, latestEnrollment(c.enrollments)),
     last_visit: lastVisitByClient.get(c.id) ?? null,
   }));

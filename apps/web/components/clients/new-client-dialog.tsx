@@ -84,6 +84,7 @@ export function NewClientDialog({
       address: '',
       notes: '',
       photoUrl: null,
+      dietType: '',
       planType: '1_month',
       customDurationDays: undefined,
       startDate: today,
@@ -249,6 +250,18 @@ export function NewClientDialog({
                   <FormLabel>Address</FormLabel>
                   <FormControl>
                     <Textarea rows={2} {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="dietType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input label="Diet type" placeholder="e.g. Low-Carb, Vegetarian" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
