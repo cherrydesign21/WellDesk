@@ -18,8 +18,8 @@ export function DuplicateTemplateButton({ templateId, showLabel = false }: { tem
         toast.error(result.error);
         return;
       }
-      toast.success('Template duplicated');
-      if (result?.id) router.push(`/diet-plans/templates/${result.id}`);
+      toast.success('Template duplicated — rename it below');
+      if (result?.id) router.push(`/diet-plans/templates/${result.id}/edit`);
     });
   }
 

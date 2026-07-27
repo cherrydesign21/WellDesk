@@ -10,6 +10,7 @@ import { DuplicateTemplateButton } from '@/components/diet-plans/duplicate-templ
 import { AssignTemplateDialog } from '@/components/diet-plans/assign-template-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
 
 export default async function DietPlanTemplatePage({
   params,
@@ -54,6 +55,9 @@ export default async function DietPlanTemplatePage({
           ← Back to templates
         </Link>
         <div className="flex items-center gap-2">
+          <Button variant="outline" render={<Link href={`/diet-plans/templates/${templateId}/edit`} />}>
+            Edit
+          </Button>
           <DuplicateTemplateButton templateId={templateId} showLabel />
           <AssignTemplateDialog templateId={templateId} clients={allClients ?? []} />
         </div>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, ArrowDownAZ, ArrowUpAZ, Users } from 'lucide-react';
+import { MoreHorizontal, ArrowDownAZ, ArrowUpAZ, Users, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { PLAN_TYPE_LABELS, PLAN_TYPES, GENDERS, CLIENT_STATUSES } from '@welldesk/shared';
 import { archiveClient, reactivateClient, bulkArchiveClients } from '@/app/(dashboard)/clients/actions';
@@ -111,6 +111,11 @@ export function ClientsTable({
   const [isPending, startTransition] = useTransition();
   const isFirstRender = useRef(true);
 
+  const secondaryFilterCount = [filters.gender, filters.planType, filters.joinMonth, filters.expiringWithin].filter(
+    Boolean
+  ).length;
+  const [showFilters, setShowFilters] = useState(secondaryFilterCount > 0);
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -186,26 +191,10 @@ export function ClientsTable({
           className="w-64"
         />
         <Select
-          value={filters.gender ?? 'all'}
-          onValueChange={(v) => navigate({ gender: clearIf(v, 'all') })}
-        >
-          <SelectTrigger className="h-10 w-32">
-            <SelectValue placeholder="Gender" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All genders</SelectItem>
-            {GENDERS.map((g) => (
-              <SelectItem key={g} value={g} className="capitalize">
-                {g}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
           value={filters.status ?? 'active'}
           onValueChange={(v) => v && navigate({ status: v })}
         >
-          <SelectTrigger className="h-10 w-32">
+          <SelectTrigger className="data-[size=default]:h-10 w-32">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -217,46 +206,25 @@ export function ClientsTable({
             ))}
           </SelectContent>
         </Select>
-        <Select
-          value={filters.planType ?? 'all'}
-          onValueChange={(v) => navigate({ planType: clearIf(v, 'all') })}
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10"
+          onClick={() => setShowFilters((v) => !v)}
         >
-          <SelectTrigger className="h-10 w-36">
-            <SelectValue placeholder="Plan type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All plan types</SelectItem>
-            {PLAN_TYPES.map((p) => (
-              <SelectItem key={p} value={p}>
-                {PLAN_TYPE_LABELS[p]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="month"
-          value={filters.joinMonth ?? ''}
-          onChange={(e) => navigate({ joinMonth: e.target.value || undefined })}
-          className="w-40"
-        />
-        <Select
-          value={filters.expiringWithin ?? 'any'}
-          onValueChange={(v) => navigate({ expiringWithin: clearIf(v, 'any') })}
-        >
-          <SelectTrigger className="h-10 w-44">
-            <SelectValue placeholder="Expiring" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="any">Any expiry</SelectItem>
-            <SelectItem value="7">Expiring in 7 days</SelectItem>
-            <SelectItem value="14">Expiring in 14 days</SelectItem>
-            <SelectItem value="30">Expiring in 30 days</SelectItem>
-          </SelectContent>
-        </Select>
+          <SlidersHorizontal className="h-4 w-4" />
+          Filters
+          {secondaryFilterCount > 0 && (
+            <Badge variant="info" className="ml-1">
+              {secondaryFilterCount}
+            </Badge>
+          )}
+          {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
 
         <div className="ml-auto flex items-center gap-2">
           <Select value={sort} onValueChange={(v) => v && navigate({ sort: v })}>
-            <SelectTrigger className="h-10 w-36">
+            <SelectTrigger className="data-[size=default]:h-10 w-36">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -284,6 +252,63 @@ export function ClientsTable({
           />
         </div>
       </div>
+
+      {showFilters && (
+        <div className="flex flex-wrap items-end gap-3 rounded-md border bg-muted/30 p-3">
+          <Select
+            value={filters.gender ?? 'all'}
+            onValueChange={(v) => navigate({ gender: clearIf(v, 'all') })}
+          >
+            <SelectTrigger className="data-[size=default]:h-10 w-32">
+              <SelectValue placeholder="Gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All genders</SelectItem>
+              {GENDERS.map((g) => (
+                <SelectItem key={g} value={g} className="capitalize">
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.planType ?? 'all'}
+            onValueChange={(v) => navigate({ planType: clearIf(v, 'all') })}
+          >
+            <SelectTrigger className="data-[size=default]:h-10 w-36">
+              <SelectValue placeholder="Plan type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All plan types</SelectItem>
+              {PLAN_TYPES.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {PLAN_TYPE_LABELS[p]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="month"
+            value={filters.joinMonth ?? ''}
+            onChange={(e) => navigate({ joinMonth: e.target.value || undefined })}
+            className="w-40"
+          />
+          <Select
+            value={filters.expiringWithin ?? 'any'}
+            onValueChange={(v) => navigate({ expiringWithin: clearIf(v, 'any') })}
+          >
+            <SelectTrigger className="data-[size=default]:h-10 w-44">
+              <SelectValue placeholder="Expiring" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any expiry</SelectItem>
+              <SelectItem value="7">Expiring in 7 days</SelectItem>
+              <SelectItem value="14">Expiring in 14 days</SelectItem>
+              <SelectItem value="30">Expiring in 30 days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {selected.size > 0 && (
         <div className="flex items-center gap-3 rounded-md border bg-muted/40 px-3 py-2 text-sm">
