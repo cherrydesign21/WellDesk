@@ -9,7 +9,7 @@ import { NotificationsMenu } from '@/components/dashboard/notifications-menu';
 import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const practiceName = profile.practices?.name ?? 'WellDesk';
   const logoUrl = profile.practices?.logo_url as string | null | undefined;
 
@@ -39,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <NotificationsMenu items={notifications} />
             <ProfileMenu
               fullName={profile.full_name}
+              email={user.email ?? ''}
               avatarUrl={profile.avatar_url}
               isSuperAdmin={profile.is_super_admin}
             />

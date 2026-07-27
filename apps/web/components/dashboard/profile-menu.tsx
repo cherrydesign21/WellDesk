@@ -14,15 +14,16 @@ import {
 
 export function ProfileMenu({
   fullName,
+  email,
   avatarUrl,
   isSuperAdmin,
 }: {
   fullName: string;
+  email?: string;
   avatarUrl?: string | null;
   isSuperAdmin?: boolean;
 }) {
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
-  const firstName = fullName.trim().split(/\s+/)[0] ?? fullName;
 
   return (
     <DropdownMenu>
@@ -38,8 +39,8 @@ export function ProfileMenu({
           </div>
         )}
         <div className="hidden min-w-0 text-left sm:block">
-          <p className="truncate text-sm font-semibold">Greetings! 👋</p>
-          <p className="truncate text-xs text-muted-foreground">Start your day with {firstName}</p>
+          <p className="truncate text-sm font-semibold">{fullName}</p>
+          {email && <p className="truncate text-xs text-muted-foreground">{email}</p>}
         </div>
         <ChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground sm:block" />
       </DropdownMenuTrigger>

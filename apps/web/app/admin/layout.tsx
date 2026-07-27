@@ -4,7 +4,7 @@ import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { ProfileMenu } from '@/components/dashboard/profile-menu';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = await requireSuperAdmin();
+  const { user, profile } = await requireSuperAdmin();
 
   return (
     <div className="app-theme flex h-svh w-full bg-background">
@@ -20,7 +20,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div />
 
           <div className="flex shrink-0 items-center justify-self-end gap-2">
-            <ProfileMenu fullName={profile.full_name} avatarUrl={profile.avatar_url} isSuperAdmin={profile.is_super_admin} />
+            <ProfileMenu
+              fullName={profile.full_name}
+              email={user.email ?? ''}
+              avatarUrl={profile.avatar_url}
+              isSuperAdmin={profile.is_super_admin}
+            />
           </div>
         </header>
 

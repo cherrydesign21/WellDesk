@@ -102,15 +102,20 @@ export function ClientHeaderCard({
       <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
         <div className="flex items-center gap-2">
           {client.email && (
-            <Button variant="outline" size="sm" render={<a href={`mailto:${client.email}`} />}>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              title="Message"
+              render={<a href={`mailto:${client.email}`} />}
+            >
               <MessageSquare className="h-4 w-4" />
-              Message
+              <span className="sr-only">Message</span>
             </Button>
           )}
           {client.phone && (
-            <Button variant="outline" size="sm" render={<a href={`tel:${client.phone}`} />}>
+            <Button variant="outline" size="icon-sm" title="Call" render={<a href={`tel:${client.phone}`} />}>
               <PhoneCall className="h-4 w-4" />
-              Call
+              <span className="sr-only">Call</span>
             </Button>
           )}
           <Button variant="outline" size="sm" render={<a href={`/api/clients/${client.id}/report-card`} />}>
