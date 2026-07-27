@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
+import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -134,9 +135,12 @@ export default async function PortalPage() {
         )}
       </div>
 
-      <div>
-        <h2 className="mb-3 text-lg font-medium">Your Progress</h2>
-        <MetricsChart rows={rows} />
+      <div className="space-y-6">
+        <div>
+          <h2 className="mb-3 text-lg font-medium">Your Progress</h2>
+          <MetricsChart rows={rows} />
+        </div>
+        <MetricsCompare rows={rows} />
       </div>
 
       <div>
