@@ -63,8 +63,12 @@ export default async function ClientsPage({
     last_visit: lastVisitByClient.get(c.id) ?? null,
   }));
 
-  if (params.status) {
-    clients = clients.filter((c) => c.effective_status === params.status);
+  // No status filter in the URL yet defaults to "active" — clients rarely
+  // want archived/expired clients cluttering the default view. Selecting
+  // "All statuses" in the UI passes status=all explicitly to opt back in.
+  const statusFilter = params.status ?? 'active';
+  if (statusFilter !== 'all') {
+    clients = clients.filter((c) => c.effective_status === statusFilter);
   }
   if (params.planType) {
     clients = clients.filter((c) => latestEnrollment(c.enrollments)?.plan_type === params.planType);

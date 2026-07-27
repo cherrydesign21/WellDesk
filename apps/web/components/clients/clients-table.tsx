@@ -189,7 +189,7 @@ export function ClientsTable({
           value={filters.gender ?? 'all'}
           onValueChange={(v) => navigate({ gender: clearIf(v, 'all') })}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="h-10 w-32">
             <SelectValue placeholder="Gender" />
           </SelectTrigger>
           <SelectContent>
@@ -202,10 +202,10 @@ export function ClientsTable({
           </SelectContent>
         </Select>
         <Select
-          value={filters.status ?? 'all'}
-          onValueChange={(v) => navigate({ status: clearIf(v, 'all') })}
+          value={filters.status ?? 'active'}
+          onValueChange={(v) => v && navigate({ status: v })}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="h-10 w-32">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -221,7 +221,7 @@ export function ClientsTable({
           value={filters.planType ?? 'all'}
           onValueChange={(v) => navigate({ planType: clearIf(v, 'all') })}
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="h-10 w-36">
             <SelectValue placeholder="Plan type" />
           </SelectTrigger>
           <SelectContent>
@@ -243,7 +243,7 @@ export function ClientsTable({
           value={filters.expiringWithin ?? 'any'}
           onValueChange={(v) => navigate({ expiringWithin: clearIf(v, 'any') })}
         >
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="h-10 w-44">
             <SelectValue placeholder="Expiring" />
           </SelectTrigger>
           <SelectContent>
@@ -256,7 +256,7 @@ export function ClientsTable({
 
         <div className="ml-auto flex items-center gap-2">
           <Select value={sort} onValueChange={(v) => v && navigate({ sort: v })}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="h-10 w-36">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
