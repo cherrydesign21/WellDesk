@@ -21,7 +21,15 @@ export type { AppointmentRow } from '@/lib/appointments-export';
 
 const MODE_ICONS = { video: Video, in_person: UsersIcon, phone: Phone } as const;
 
-export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
+export function AppointmentsList({
+  rows,
+  hoveredDate,
+  onHoverDate,
+}: {
+  rows: AppointmentRow[];
+  hoveredDate?: string | null;
+  onHoverDate?: (date: string | null) => void;
+}) {
   const [isPending, startTransition] = useTransition();
 
   function handleStatusChange(id: string, status: string | null) {
@@ -61,7 +69,12 @@ export function AppointmentsList({ rows }: { rows: AppointmentRow[] }) {
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                onMouseEnter={() => onHoverDate?.(row.local_date)}
+                onMouseLeave={() => onHoverDate?.(null)}
+                className={hoveredDate === row.local_date ? 'bg-primary/10' : undefined}
+              >
                 <TableCell className="whitespace-nowrap">{row.local_date}</TableCell>
                 <TableCell className="whitespace-nowrap">{row.local_time}</TableCell>
                 <TableCell>
