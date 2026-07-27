@@ -6,6 +6,8 @@ import { getCurrentProfile } from '@/lib/auth';
 import { getPlanWithMeals } from '@/lib/diet-plans';
 import { PlanView } from '@/components/diet-plans/plan-view';
 import { DeleteTemplateButton } from '@/components/diet-plans/delete-template-button';
+import { DuplicateTemplateButton } from '@/components/diet-plans/duplicate-template-button';
+import { AssignTemplateDialog } from '@/components/diet-plans/assign-template-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
@@ -28,6 +30,12 @@ export default async function DietPlanTemplatePage({
     .eq('is_template', false)
     .eq('template_id', templateId);
 
+  const { data: allClients } = await supabase
+    .from('clients')
+    .select('id, full_name')
+    .neq('status', 'archived')
+    .order('full_name');
+
   type ClientRel = { full_name: string } | { full_name: string }[] | null;
   const seenClientIds = new Set<string>();
   const assignedClients: { id: string; name: string }[] = [];
@@ -41,9 +49,15 @@ export default async function DietPlanTemplatePage({
 
   return (
     <div className="space-y-6">
-      <Link href="/diet-plans/templates" className="text-sm text-muted-foreground hover:underline">
-        ← Back to templates
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Link href="/diet-plans/templates" className="text-sm text-muted-foreground hover:underline">
+          ← Back to templates
+        </Link>
+        <div className="flex items-center gap-2">
+          <DuplicateTemplateButton templateId={templateId} showLabel />
+          <AssignTemplateDialog templateId={templateId} clients={allClients ?? []} />
+        </div>
+      </div>
 
       <PlanView plan={plan} />
 

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, UtensilsCrossed } from 'lucide-react';
+import { Plus, UtensilsCrossed, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DeleteTemplateButton } from '@/components/diet-plans/delete-template-button';
+import { DuplicateTemplateButton } from '@/components/diet-plans/duplicate-template-button';
+import { AssignTemplateDialog } from '@/components/diet-plans/assign-template-dialog';
 
 export default async function DietPlanTemplatesPage() {
   const supabase = await createClient();
@@ -24,6 +26,12 @@ export default async function DietPlanTemplatesPage() {
     .select('template_id, client_id')
     .eq('is_template', false)
     .not('template_id', 'is', null);
+
+  const { data: allClients } = await supabase
+    .from('clients')
+    .select('id, full_name')
+    .neq('status', 'archived')
+    .order('full_name');
 
   const clientsByTemplate = new Map<string, Set<string>>();
   for (const row of assignedRows ?? []) {
@@ -51,7 +59,7 @@ export default async function DietPlanTemplatesPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Assigned to</TableHead>
-              <TableHead className="w-10" />
+              <TableHead className="w-10 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,7 +89,21 @@ export default async function DietPlanTemplatesPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <DeleteTemplateButton templateId={template.id} />
+                    <div className="flex items-center justify-end gap-1">
+                      <AssignTemplateDialog
+                        templateId={template.id}
+                        clients={allClients ?? []}
+                        trigger={<Button variant="ghost" size="icon" title="Assign to clients" />}
+                        triggerContent={
+                          <>
+                            <Users className="h-4 w-4" />
+                            <span className="sr-only">Assign to clients</span>
+                          </>
+                        }
+                      />
+                      <DuplicateTemplateButton templateId={template.id} />
+                      <DeleteTemplateButton templateId={template.id} />
+                    </div>
                   </TableCell>
                 </TableRow>
               );
