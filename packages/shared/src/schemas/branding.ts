@@ -1,13 +1,15 @@
 import { z } from 'zod';
-import { CURATED_FONTS } from '../constants';
-
-const fontIds: string[] = CURATED_FONTS.map((f) => f.id);
 
 export const brandingSchema = z.object({
   name: z.string().trim().min(2, 'Practice name is required').max(120),
   tagline: z.string().trim().max(200).optional().nullable(),
-  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Enter a valid hex color'),
-  fontChoice: z.string().refine((v) => fontIds.includes(v), 'Invalid font choice'),
+  contactPhone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+\-\s()]{7,20}$/, 'Enter a valid phone number')
+    .optional()
+    .or(z.literal('')),
+  contactEmail: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
 });
 
 export type BrandingInput = z.infer<typeof brandingSchema>;

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight } from 'lucide-react';
+import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight, Mail, Phone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
 import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
@@ -63,9 +63,28 @@ export default async function PortalPage() {
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true });
 
+  const contactPhone = client.practices?.contact_phone;
+  const contactEmail = client.practices?.contact_email;
+
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Hi {client.full_name.split(' ')[0]}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">Hi {client.full_name.split(' ')[0]}</h1>
+        {(contactPhone || contactEmail) && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            {contactPhone && (
+              <a href={`tel:${contactPhone}`} className="flex items-center gap-1.5 hover:text-foreground">
+                <Phone className="h-3.5 w-3.5" /> {contactPhone}
+              </a>
+            )}
+            {contactEmail && (
+              <a href={`mailto:${contactEmail}`} className="flex items-center gap-1.5 hover:text-foreground">
+                <Mail className="h-3.5 w-3.5" /> {contactEmail}
+              </a>
+            )}
+          </div>
+        )}
+      </div>
 
       <div>
         <div className="mb-3 flex items-center justify-between">

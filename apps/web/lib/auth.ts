@@ -65,7 +65,21 @@ export async function getCurrentClient(supabase: SupabaseClient) {
 
   const practiceRow = Array.isArray(client.practices) ? client.practices[0] : client.practices;
 
-  return { user, client: { ...client, practices: practiceRow } };
+  // Queried separately so a not-yet-run migration for these two columns
+  // can't lock every client out of the portal — worst case, they're blank.
+  const { data: contactInfo } = await supabase
+    .from('practices')
+    .select('contact_phone, contact_email')
+    .eq('id', client.practice_id)
+    .maybeSingle();
+
+  return {
+    user,
+    client: {
+      ...client,
+      practices: practiceRow ? { ...practiceRow, ...contactInfo } : practiceRow,
+    },
+  };
 }
 
 export async function requireClient() {

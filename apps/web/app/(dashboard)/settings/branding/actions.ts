@@ -23,8 +23,8 @@ export async function updateBranding(values: BrandingInput) {
     .update({
       name: data.name,
       tagline: data.tagline || null,
-      primary_color: data.primaryColor,
-      font_choice: data.fontChoice,
+      contact_phone: data.contactPhone || null,
+      contact_email: data.contactEmail || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', result.profile.practice_id);
