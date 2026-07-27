@@ -109,7 +109,11 @@ export function NewAppointmentDialog({
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a client" />
+                          <SelectValue>
+                            {(value: string | null) =>
+                              value ? (clients?.find((c) => c.id === value)?.full_name ?? value) : 'Select a client'
+                            }
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

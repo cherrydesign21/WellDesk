@@ -45,6 +45,12 @@ import {
 
 const today = new Date().toISOString().slice(0, 10);
 
+const GENDER_LABELS: Record<(typeof GENDERS)[number], string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+};
+
 function matchedFieldsLabel(fields: ('phone' | 'email')[]) {
   if (fields.length === 2) return 'phone number and email';
   return fields[0] === 'email' ? 'email' : 'phone number';
@@ -215,13 +221,17 @@ export function NewClientDialog({
                     <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue>
+                            {(value: keyof typeof GENDER_LABELS | null) =>
+                              value ? (GENDER_LABELS[value] ?? value) : 'Select'
+                            }
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {GENDERS.map((g) => (
-                          <SelectItem key={g} value={g} className="capitalize">
-                            {g}
+                          <SelectItem key={g} value={g}>
+                            {GENDER_LABELS[g]}
                           </SelectItem>
                         ))}
                       </SelectContent>

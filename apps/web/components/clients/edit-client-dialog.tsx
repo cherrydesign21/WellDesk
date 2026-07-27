@@ -35,6 +35,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+const GENDER_LABELS: Record<(typeof GENDERS)[number], string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+};
+
 export type EditableClient = {
   id: string;
   full_name: string;
@@ -179,13 +185,17 @@ export function EditClientDialog({
                     <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue>
+                            {(value: keyof typeof GENDER_LABELS | null) =>
+                              value ? (GENDER_LABELS[value] ?? value) : 'Select'
+                            }
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {GENDERS.map((g) => (
-                          <SelectItem key={g} value={g} className="capitalize">
-                            {g}
+                          <SelectItem key={g} value={g}>
+                            {GENDER_LABELS[g]}
                           </SelectItem>
                         ))}
                       </SelectContent>

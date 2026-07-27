@@ -105,7 +105,9 @@ export function AppointmentsList({
                     disabled={isPending}
                   >
                     <SelectTrigger className="w-32">
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: AppointmentStatus) => APPOINTMENT_STATUS_LABELS[value] ?? value}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {APPOINTMENT_STATUSES.map((s) => (

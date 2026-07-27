@@ -87,7 +87,9 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
         <div className="flex flex-wrap items-center gap-2">
           <Select value={selected} onValueChange={(v) => setSelected(v as MetricFieldKey)}>
             <SelectTrigger className="w-45">
-              <SelectValue />
+              <SelectValue>
+                {(value: MetricFieldKey) => METRIC_FIELDS.find((f) => f.key === value)?.label ?? value}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {availableFields.map((f) => (

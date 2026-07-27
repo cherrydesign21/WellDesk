@@ -51,6 +51,33 @@ const SORT_OPTIONS = [
   { value: 'planType', label: 'Plan Type' },
 ];
 
+const STATUS_LABELS: Record<string, string> = {
+  all: 'All statuses',
+  active: 'Active',
+  expired: 'Expired',
+  paused: 'Paused',
+  archived: 'Archived',
+};
+
+const GENDER_LABELS: Record<string, string> = {
+  all: 'All genders',
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+};
+
+const PLAN_TYPE_FILTER_LABELS: Record<string, string> = {
+  all: 'All plan types',
+  ...PLAN_TYPE_LABELS,
+};
+
+const EXPIRING_LABELS: Record<string, string> = {
+  any: 'Any expiry',
+  '7': 'Expiring in 7 days',
+  '14': 'Expiring in 14 days',
+  '30': 'Expiring in 30 days',
+};
+
 function clearIf(value: string | null, sentinel: string) {
   return value && value !== sentinel ? value : undefined;
 }
@@ -195,7 +222,7 @@ export function ClientsTable({
           onValueChange={(v) => v && navigate({ status: v })}
         >
           <SelectTrigger className="data-[size=default]:h-10 w-32">
-            <SelectValue placeholder="Status" />
+            <SelectValue>{(value: string) => STATUS_LABELS[value] ?? value}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
@@ -225,7 +252,9 @@ export function ClientsTable({
         <div className="ml-auto flex items-center gap-2">
           <Select value={sort} onValueChange={(v) => v && navigate({ sort: v })}>
             <SelectTrigger className="data-[size=default]:h-10 w-36">
-              <SelectValue placeholder="Sort by" />
+              <SelectValue>
+                {(value: string) => SORT_OPTIONS.find((o) => o.value === value)?.label ?? value}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {SORT_OPTIONS.map((o) => (
@@ -260,7 +289,7 @@ export function ClientsTable({
             onValueChange={(v) => navigate({ gender: clearIf(v, 'all') })}
           >
             <SelectTrigger className="data-[size=default]:h-10 w-32">
-              <SelectValue placeholder="Gender" />
+              <SelectValue>{(value: string) => GENDER_LABELS[value] ?? value}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All genders</SelectItem>
@@ -276,7 +305,7 @@ export function ClientsTable({
             onValueChange={(v) => navigate({ planType: clearIf(v, 'all') })}
           >
             <SelectTrigger className="data-[size=default]:h-10 w-36">
-              <SelectValue placeholder="Plan type" />
+              <SelectValue>{(value: string) => PLAN_TYPE_FILTER_LABELS[value] ?? value}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All plan types</SelectItem>
@@ -298,7 +327,7 @@ export function ClientsTable({
             onValueChange={(v) => navigate({ expiringWithin: clearIf(v, 'any') })}
           >
             <SelectTrigger className="data-[size=default]:h-10 w-44">
-              <SelectValue placeholder="Expiring" />
+              <SelectValue>{(value: string) => EXPIRING_LABELS[value] ?? value}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="any">Any expiry</SelectItem>
