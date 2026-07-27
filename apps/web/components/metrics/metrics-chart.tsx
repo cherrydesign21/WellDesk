@@ -11,9 +11,11 @@ import {
   YAxis,
 } from 'recharts';
 import { TrendingDown, TrendingUp, ArrowRightLeft, Percent } from 'lucide-react';
-import { METRIC_FIELDS, type MetricFieldKey } from '@welldesk/shared';
+import { METRIC_FIELDS, type MetricFieldKey, isLengthField, displayMetricValue, displayMetricUnit } from '@welldesk/shared';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLengthUnit } from '@/lib/use-length-unit';
+import { LengthUnitToggle } from './length-unit-toggle';
 import type { MetricRow } from './types';
 
 const FIELD_COLORS = [
@@ -45,12 +47,14 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
 
   const [selected, setSelected] = useState<MetricFieldKey>(availableFields[0]?.key ?? 'weight_kg');
   const [range, setRange] = useState<(typeof RANGES)[number]['key']>('90d');
+  const [lengthUnit] = useLengthUnit();
 
   if (availableFields.length === 0) return null;
 
   const field = availableFields.find((f) => f.key === selected) ?? availableFields[0];
   const color = colorForField(field.key);
   const gradientId = `metric-gradient-${field.key}`;
+  const displayUnit = displayMetricUnit(field.key, field.unit, lengthUnit);
 
   const activeRange = RANGES.find((r) => r.key === range) ?? RANGES[2];
   const cutoff = new Date();
@@ -65,7 +69,7 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
   const data = visibleRows.map((r) => ({
     date: new Date(r.recorded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
     fullDate: new Date(r.recorded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
-    value: r[field.key as keyof MetricRow] as number,
+    value: displayMetricValue(field.key, r[field.key as keyof MetricRow] as number, lengthUnit),
   }));
 
   const startValue = data[0]?.value ?? null;
@@ -107,6 +111,7 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
               </button>
             ))}
           </div>
+          {isLengthField(field.key) && <LengthUnitToggle />}
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 lg:flex-row">
@@ -127,11 +132,11 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
                 axisLine={false}
                 width={40}
                 domain={['auto', 'auto']}
-                unit={field.unit ? ` ${field.unit}` : ''}
+                unit={displayUnit ? ` ${displayUnit}` : ''}
               />
               <Tooltip
                 labelFormatter={(_, payload) => payload?.[0]?.payload?.fullDate ?? ''}
-                formatter={(value) => [`${value}${field.unit ? ` ${field.unit}` : ''}`, field.label]}
+                formatter={(value) => [`${value}${displayUnit ? ` ${displayUnit}` : ''}`, field.label]}
               />
               <Area
                 type="monotone"
@@ -154,7 +159,7 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
               </div>
               <p className="mt-1 text-lg font-semibold">
                 {startValue}
-                {field.unit ? ` ${field.unit}` : ''}
+                {displayUnit ? ` ${displayUnit}` : ''}
               </p>
             </div>
             <div className="rounded-lg border p-3">
@@ -163,7 +168,7 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
               </div>
               <p className="mt-1 text-lg font-semibold">
                 {currentValue}
-                {field.unit ? ` ${field.unit}` : ''}
+                {displayUnit ? ` ${displayUnit}` : ''}
               </p>
             </div>
             <div className="rounded-lg border p-3">
@@ -175,7 +180,7 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
               >
                 {totalChange !== null && totalChange > 0 ? '+' : ''}
                 {totalChange}
-                {field.unit ? ` ${field.unit}` : ''}
+                {displayUnit ? ` ${displayUnit}` : ''}
               </p>
             </div>
             <div className="rounded-lg border p-3">

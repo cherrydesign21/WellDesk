@@ -5,8 +5,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
-import { healthMetricSchema, type HealthMetricInput, calculateBmi } from '@welldesk/shared';
+import { healthMetricSchema, type HealthMetricInput, calculateBmi, inchesToCm } from '@welldesk/shared';
 import { createHealthMetric } from '@/app/(dashboard)/clients/[clientId]/actions';
+import { useLengthUnit } from '@/lib/use-length-unit';
+import { LengthUnitToggle } from './length-unit-toggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +49,8 @@ function numberField(
 export function LogMetricDialog({ clientId }: { clientId: string }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [unit] = useLengthUnit();
+  const lengthLabel = unit === 'in' ? 'in' : 'cm';
 
   const form = useForm<HealthMetricInput>({
     resolver: zodResolver(healthMetricSchema),
@@ -69,11 +73,22 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
 
   const weight = form.watch('weightKg');
   const height = form.watch('heightCm');
-  const bmi = weight && height ? calculateBmi(weight, height) : null;
+  const heightCmForBmi = height != null ? (unit === 'in' ? inchesToCm(height) : height) : undefined;
+  const bmi = weight && heightCmForBmi ? calculateBmi(weight, heightCmForBmi) : null;
 
   function submit(values: HealthMetricInput) {
+    const payload =
+      unit === 'in'
+        ? {
+            ...values,
+            heightCm: values.heightCm != null ? inchesToCm(values.heightCm) : values.heightCm,
+            waistCm: values.waistCm != null ? inchesToCm(values.waistCm) : values.waistCm,
+            chestCm: values.chestCm != null ? inchesToCm(values.chestCm) : values.chestCm,
+            hipsCm: values.hipsCm != null ? inchesToCm(values.hipsCm) : values.hipsCm,
+          }
+        : values;
     startTransition(async () => {
-      const result = await createHealthMetric(clientId, values);
+      const result = await createHealthMetric(clientId, payload);
       if (result?.error) {
         toast.error(result.error);
         return;
@@ -183,7 +198,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="heightCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Height (cm)' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: `Height (${lengthLabel})` })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -196,13 +211,17 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
               </p>
             )}
 
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Body measurements</p>
+              <LengthUnitToggle />
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="waistCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Waist (cm)' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: `Waist (${lengthLabel})` })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -212,7 +231,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="chestCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Chest (cm)' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: `Chest (${lengthLabel})` })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -222,7 +241,7 @@ export function LogMetricDialog({ clientId }: { clientId: string }) {
                 name="hipsCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: 'Hips (cm)' })}</FormControl>
+                    <FormControl>{numberField(field, { type: 'number', step: '0.1', label: `Hips (${lengthLabel})` })}</FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

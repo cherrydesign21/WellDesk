@@ -142,6 +142,35 @@ export const METRIC_FIELDS = [
 
 export type MetricFieldKey = (typeof METRIC_FIELDS)[number]['key'];
 
+export const LENGTH_UNITS = ['cm', 'in'] as const;
+export type LengthUnit = (typeof LENGTH_UNITS)[number];
+
+export const CM_PER_INCH = 2.54;
+
+export function cmToInches(cm: number): number {
+  return Math.round((cm / CM_PER_INCH) * 10) / 10;
+}
+
+export function inchesToCm(inches: number): number {
+  return Math.round(inches * CM_PER_INCH * 10) / 10;
+}
+
+const LENGTH_FIELD_KEYS = new Set<string>(['waist_cm', 'chest_cm', 'hips_cm']);
+
+export function isLengthField(key: string): boolean {
+  return LENGTH_FIELD_KEYS.has(key);
+}
+
+// Converts a stored cm value for display in the user's chosen unit; leaves
+// non-length metrics (weight, BP, sugar, BMI, body fat) untouched.
+export function displayMetricValue(key: string, value: number, unit: LengthUnit): number {
+  return isLengthField(key) && unit === 'in' ? cmToInches(value) : value;
+}
+
+export function displayMetricUnit(key: string, baseUnit: string, unit: LengthUnit): string {
+  return isLengthField(key) && unit === 'in' ? 'in' : baseUnit;
+}
+
 export const ENROLLMENT_STATUSES = ['active', 'expired', 'paused'] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
