@@ -66,9 +66,10 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
   // to plot — an empty chart is worse than showing more than was asked for.
   const visibleRows = rangeRows.length >= 2 ? rangeRows : fieldRows;
 
-  const data = visibleRows.map((r) => ({
+  const data = visibleRows.map((r, index) => ({
+    index,
     date: new Date(r.recorded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-    fullDate: new Date(r.recorded_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+    fullDate: new Date(r.recorded_at).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
     value: displayMetricValue(field.key, r[field.key as keyof MetricRow] as number, lengthUnit),
   }));
 
@@ -127,7 +128,12 @@ export function MetricsChart({ rows }: { rows: MetricRow[] }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" fontSize={12} tickLine={false} />
+              <XAxis
+                dataKey="index"
+                tickFormatter={(index: number) => data[index]?.date ?? ''}
+                fontSize={12}
+                tickLine={false}
+              />
               <YAxis
                 fontSize={12}
                 tickLine={false}
