@@ -155,6 +155,11 @@ export default async function ClientDetailPage({
     mode: a.mode,
   }));
 
+  // appointmentRows is newest-first; reverse the upcoming subset so the
+  // soonest appointment shows first, while visit history stays newest-first.
+  const upcomingAppointmentRows = appointmentRows.filter((r) => r.status === 'scheduled').reverse();
+  const visitHistoryRows = appointmentRows.filter((r) => r.status !== 'scheduled');
+
   const nowIso = new Date().toISOString();
   const nextAppointmentRow = (appointments ?? [])
     .filter((a) => a.status === 'scheduled' && a.starts_at >= nowIso)
@@ -236,15 +241,22 @@ export default async function ClientDetailPage({
         />
 
         <div>
-          <h2 className="mb-3 text-lg font-medium">Visit History</h2>
+          <h2 className="mb-3 text-lg font-medium">Logged Metrics</h2>
           <MetricsHistoryTable clientId={client.id} rows={rows} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div>
-          <h2 className="mb-3 text-lg font-medium">Appointments</h2>
-          <AppointmentsList rows={appointmentRows} />
+        <div className="space-y-6">
+          <div>
+            <h2 className="mb-3 text-lg font-medium">Upcoming Appointments</h2>
+            <AppointmentsList rows={upcomingAppointmentRows} emptyStateTitle="No upcoming appointments" />
+          </div>
+
+          <div>
+            <h2 className="mb-3 text-lg font-medium">Visit History</h2>
+            <AppointmentsList rows={visitHistoryRows} emptyStateTitle="No visit history yet" />
+          </div>
         </div>
 
         <div className="space-y-3">

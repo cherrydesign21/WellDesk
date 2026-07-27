@@ -25,10 +25,12 @@ export function AppointmentsList({
   rows,
   hoveredDate,
   onHoverDate,
+  emptyStateTitle = 'No appointments this month',
 }: {
   rows: AppointmentRow[];
   hoveredDate?: string | null;
   onHoverDate?: (date: string | null) => void;
+  emptyStateTitle?: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -50,7 +52,7 @@ export function AppointmentsList({
   }
 
   if (rows.length === 0) {
-    return <EmptyState icon={CalendarDays} title="No appointments this month" compact />;
+    return <EmptyState icon={CalendarDays} title={emptyStateTitle} compact />;
   }
 
   return (
