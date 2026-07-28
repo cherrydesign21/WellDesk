@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import {
@@ -28,7 +28,7 @@ import {
 } from '@/components/clients/client-stat-cards';
 import type { MetricRow } from '@/components/metrics/types';
 
-const PAYMENT_EXPORT_HEADERS = ['Date', 'Amount', 'Mode', 'Reference'];
+const PAYMENT_EXPORT_HEADERS = ['Date', 'Amount', 'Mode', 'Reference', 'Plan Period'];
 
 function statusVariant(status: string): 'success' | 'warning' | 'destructive' | 'outline' {
   switch (status) {
@@ -76,9 +76,19 @@ export default async function ClientDetailPage({
 
   const { data: payments } = await supabase
     .from('payments')
-    .select('id, amount, payment_date, mode, reference_no, notes')
+    .select('id, amount, payment_date, mode, reference_no, notes, enrollment_id')
     .eq('client_id', clientId)
     .order('payment_date', { ascending: false });
+
+  const enrollmentById = new Map((enrollments ?? []).map((e) => [e.id, e]));
+  const paymentRows = (payments ?? []).map((p) => {
+    const enrollment = p.enrollment_id ? enrollmentById.get(p.enrollment_id) : undefined;
+    return {
+      ...p,
+      plan_start: enrollment?.start_date ?? null,
+      plan_end: enrollment?.expiry_date ?? null,
+    };
+  });
 
   const { data: paymentSummary } = latestEnrollment
     ? await supabase
@@ -266,16 +276,29 @@ export default async function ClientDetailPage({
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium">Payments</h2>
             <div className="flex items-center gap-2">
+              <Link
+                href={`/clients/${client.id}/payments`}
+                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                View all
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
               <ExportMenu
                 filenameBase={`payments-${client.full_name}`}
                 title={`Payments — ${client.full_name}`}
                 headers={PAYMENT_EXPORT_HEADERS}
-                rows={(payments ?? []).map((p) => [p.payment_date, p.amount, p.mode, p.reference_no ?? '—'])}
+                rows={(paymentRows ?? []).map((p) => [
+                  p.payment_date,
+                  p.amount,
+                  p.mode,
+                  p.reference_no ?? '—',
+                  p.plan_start && p.plan_end ? `${p.plan_start} to ${p.plan_end}` : '—',
+                ])}
               />
               <LogPaymentDialog clientId={client.id} />
             </div>
           </div>
-          <PaymentsHistoryTable clientId={client.id} rows={payments ?? []} />
+          <PaymentsHistoryTable clientId={client.id} rows={paymentRows} showReference={false} />
         </div>
       </div>
 

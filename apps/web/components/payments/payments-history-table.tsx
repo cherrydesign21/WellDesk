@@ -15,9 +15,19 @@ export type PaymentRow = {
   mode: string;
   reference_no: string | null;
   notes: string | null;
+  plan_start?: string | null;
+  plan_end?: string | null;
 };
 
-export function PaymentsHistoryTable({ clientId, rows }: { clientId: string; rows: PaymentRow[] }) {
+export function PaymentsHistoryTable({
+  clientId,
+  rows,
+  showReference = true,
+}: {
+  clientId: string;
+  rows: PaymentRow[];
+  showReference?: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
 
   function handleDelete(id: string) {
@@ -43,7 +53,8 @@ export function PaymentsHistoryTable({ clientId, rows }: { clientId: string; row
             <TableHead>Date</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Mode</TableHead>
-            <TableHead>Reference</TableHead>
+            <TableHead>Plan Period</TableHead>
+            {showReference && <TableHead>Reference</TableHead>}
             <TableHead>Notes</TableHead>
             <TableHead className="w-10" />
           </TableRow>
@@ -54,8 +65,11 @@ export function PaymentsHistoryTable({ clientId, rows }: { clientId: string; row
               <TableCell className="whitespace-nowrap">{row.payment_date}</TableCell>
               <TableCell>{row.amount}</TableCell>
               <TableCell className="capitalize">{row.mode}</TableCell>
-              <TableCell>{row.reference_no ?? '—'}</TableCell>
-              <TableCell className="max-w-[200px] truncate text-muted-foreground">{row.notes}</TableCell>
+              <TableCell className="whitespace-nowrap text-muted-foreground">
+                {row.plan_start && row.plan_end ? `${row.plan_start} → ${row.plan_end}` : '—'}
+              </TableCell>
+              {showReference && <TableCell>{row.reference_no ?? '—'}</TableCell>}
+              <TableCell className="max-w-50 truncate text-muted-foreground">{row.notes}</TableCell>
               <TableCell>
                 <Button variant="ghost" size="icon" disabled={isPending} onClick={() => handleDelete(row.id)}>
                   <Trash2 className="h-4 w-4" />
