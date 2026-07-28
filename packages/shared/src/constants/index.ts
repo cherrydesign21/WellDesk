@@ -202,10 +202,11 @@ export function getEffectiveClientStatus(
   return clientStatus;
 }
 
-export const APPOINTMENT_STATUSES = ['scheduled', 'completed', 'cancelled', 'no_show'] as const;
+export const APPOINTMENT_STATUSES = ['requested', 'scheduled', 'completed', 'cancelled', 'no_show'] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+  requested: 'Requested',
   scheduled: 'Scheduled',
   completed: 'Completed',
   cancelled: 'Cancelled',

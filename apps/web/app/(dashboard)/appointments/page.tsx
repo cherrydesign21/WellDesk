@@ -9,6 +9,7 @@ import {
 } from '@welldesk/shared';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
 import { AppointmentsCalendarView } from '@/components/appointments/appointments-calendar-view';
+import { PendingRequestsList } from '@/components/appointments/pending-requests-list';
 import type { AppointmentRow } from '@/lib/appointments-export';
 
 function pad(n: number) {
@@ -84,6 +85,12 @@ export default async function AppointmentsPage({
     .neq('status', 'archived')
     .order('full_name');
 
+  const { data: requestedAppointments } = await supabase
+    .from('appointments')
+    .select('id, client_id, starts_at, status, notes, mode, clients(full_name)')
+    .eq('status', 'requested')
+    .order('starts_at', { ascending: true });
+
   type AppointmentJoined = {
     id: string;
     client_id: string;
@@ -94,7 +101,7 @@ export default async function AppointmentsPage({
     clients: { full_name: string } | { full_name: string }[] | null;
   };
 
-  const rows: AppointmentRow[] = ((appointments ?? []) as AppointmentJoined[]).map((a) => {
+  function toAppointmentRow(a: AppointmentJoined): AppointmentRow {
     const clientRel = Array.isArray(a.clients) ? a.clients[0] : a.clients;
     return {
       id: a.id,
@@ -106,7 +113,12 @@ export default async function AppointmentsPage({
       notes: a.notes,
       mode: a.mode,
     };
-  });
+  }
+
+  const rows: AppointmentRow[] = ((appointments ?? []) as AppointmentJoined[]).map(toAppointmentRow);
+  const pendingRequestRows: AppointmentRow[] = ((requestedAppointments ?? []) as AppointmentJoined[]).map(
+    toAppointmentRow
+  );
 
   const byDate: Record<string, AppointmentRow[]> = {};
   for (const row of rows) {
@@ -130,6 +142,8 @@ export default async function AppointmentsPage({
         </div>
         <NewAppointmentDialog clients={clients ?? []} defaultDate={todayLocalKey} />
       </div>
+
+      <PendingRequestsList rows={pendingRequestRows} />
 
       <AppointmentsCalendarView
         weeks={weeks}

@@ -11,3 +11,12 @@ export const appointmentSchema = z.object({
 });
 
 export type AppointmentInput = z.infer<typeof appointmentSchema>;
+
+export const appointmentRequestSchema = z.object({
+  date: z.string().min(1, 'Date is required'),
+  time: z.string().min(1, 'Time is required'),
+  mode: z.enum(APPOINTMENT_MODES),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export type AppointmentRequestInput = z.infer<typeof appointmentRequestSchema>;

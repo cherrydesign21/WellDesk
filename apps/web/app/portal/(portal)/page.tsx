@@ -6,6 +6,7 @@ import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
+import { PortalRequestAppointmentDialog } from '@/components/portal/portal-request-appointment-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -60,7 +61,7 @@ export default async function PortalPage() {
     .from('appointments')
     .select('id, starts_at, status')
     .eq('client_id', client.id)
-    .eq('status', 'scheduled')
+    .in('status', ['scheduled', 'requested'])
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true });
 
@@ -144,7 +145,10 @@ export default async function PortalPage() {
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-medium">Upcoming Appointments</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-medium">Upcoming Appointments</h2>
+          <PortalRequestAppointmentDialog />
+        </div>
         {!appointments || appointments.length === 0 ? (
           <EmptyState icon={CalendarDays} title="No upcoming appointments" compact />
         ) : (
@@ -153,7 +157,10 @@ export default async function PortalPage() {
               {appointments.map((a) => (
                 <div key={a.id} className="flex items-center justify-between text-sm">
                   <span className="font-medium">{utcIsoToLocalDateKey(a.starts_at, timezone)}</span>
-                  <span className="text-muted-foreground">{utcIsoToLocalTime(a.starts_at, timezone)}</span>
+                  <div className="flex items-center gap-2">
+                    {a.status === 'requested' && <Badge variant="warning">Pending confirmation</Badge>}
+                    <span className="text-muted-foreground">{utcIsoToLocalTime(a.starts_at, timezone)}</span>
+                  </div>
                 </div>
               ))}
             </CardContent>

@@ -11,11 +11,14 @@ import {
   clientAccountSettingsSchema,
   changePasswordSchema,
   healthMetricSchema,
+  appointmentRequestSchema,
+  zonedTimeToUtcIso,
   type LoginInput,
   type ForgotPasswordInput,
   type ClientAccountSettingsInput,
   type ChangePasswordInput,
   type HealthMetricInput,
+  type AppointmentRequestInput,
 } from '@welldesk/shared';
 
 export async function portalLogin(values: LoginInput) {
@@ -197,5 +200,41 @@ export async function createClientHealthMetric(values: HealthMetricInput) {
   }
 
   revalidatePath('/portal');
+  return { success: true };
+}
+
+export async function requestAppointment(values: AppointmentRequestInput) {
+  const parsed = appointmentRequestSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+  const data = parsed.data;
+
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+  const { client } = result;
+  const timezone = client.practices?.timezone ?? 'Asia/Kolkata';
+
+  const startsAt = zonedTimeToUtcIso(data.date, data.time, timezone);
+
+  const { error } = await supabase.from('appointments').insert({
+    practice_id: client.practice_id,
+    client_id: client.id,
+    starts_at: startsAt,
+    mode: data.mode,
+    notes: data.notes || null,
+    status: 'requested',
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/portal');
+  revalidatePath('/appointments');
+  revalidatePath('/');
   return { success: true };
 }
