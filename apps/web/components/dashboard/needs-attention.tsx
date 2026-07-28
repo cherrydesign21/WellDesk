@@ -20,7 +20,7 @@ const KIND_DOT_CLASSES = {
 export function NeedsAttention({ items }: { items: AttentionItem[] }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between">
+      <CardHeader className="flex items-center justify-between">
         <CardTitle className="text-base">Needs Attention</CardTitle>
         <Link
           href="/clients"

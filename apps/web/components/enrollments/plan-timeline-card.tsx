@@ -34,16 +34,23 @@ function shortDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+// Average days per calendar month — used only to label checkpoints, so a
+// close approximation is fine (30 was flattering short plans and lying by
+// several months on long ones, e.g. calling the 3-month mark "Month 1").
+const DAYS_PER_MONTH = 30.44;
+
 function buildCheckpoints(startDate: string, expiryDate: string) {
   const start = new Date(startDate);
   const end = new Date(expiryDate);
   const totalDays = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
-  const totalMonths = Math.min(4, Math.max(1, Math.round(totalDays / 30)));
+  const segments = Math.min(4, Math.max(1, Math.round(totalDays / 30)));
 
   const checkpoints: { label: string; date: Date }[] = [{ label: 'Start', date: start }];
-  for (let i = 1; i < totalMonths; i++) {
-    const d = new Date(start.getTime() + Math.round((totalDays / totalMonths) * i) * 86400000);
-    checkpoints.push({ label: `Month ${i}`, date: d });
+  for (let i = 1; i < segments; i++) {
+    const daysElapsed = Math.round((totalDays / segments) * i);
+    const d = new Date(start.getTime() + daysElapsed * 86400000);
+    const monthsElapsed = Math.max(1, Math.round(daysElapsed / DAYS_PER_MONTH));
+    checkpoints.push({ label: `${monthsElapsed} Month${monthsElapsed === 1 ? '' : 's'}`, date: d });
   }
   checkpoints.push({ label: 'End', date: end });
   return checkpoints;
@@ -74,7 +81,7 @@ export function PlanTimelineCard({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Appointment &amp; Plan</CardTitle>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {latest && (
             <PauseResumeButton
               clientId={clientId}

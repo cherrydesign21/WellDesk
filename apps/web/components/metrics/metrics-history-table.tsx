@@ -34,7 +34,12 @@ export function MetricsHistoryTable({ clientId, rows }: { clientId: string; rows
   }
 
   if (rows.length === 0) {
-    return <EmptyState icon={Activity} title="No metrics logged yet" compact />;
+    return (
+      <div className="space-y-3">
+        <h2 className="text-lg font-medium">Logged Metrics</h2>
+        <EmptyState icon={Activity} title="No metrics logged yet" compact />
+      </div>
+    );
   }
 
   const sorted = [...rows].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at));
@@ -52,7 +57,8 @@ export function MetricsHistoryTable({ clientId, rows }: { clientId: string; rows
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-medium">Logged Metrics</h2>
         <ExportMenu filenameBase="metrics-history" title="Metrics History" headers={METRICS_EXPORT_HEADERS} rows={exportRows} />
       </div>
       <div className="divide-y rounded-md border">

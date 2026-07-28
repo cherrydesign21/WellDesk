@@ -2,8 +2,8 @@
 
 import { useTransition } from 'react';
 import { toast } from 'sonner';
+import { Pause, Play } from 'lucide-react';
 import { pauseEnrollment, resumeEnrollment } from '@/app/(dashboard)/clients/[clientId]/enrollments/actions';
-import { Button } from '@/components/ui/button';
 
 export function PauseResumeButton({
   clientId,
@@ -31,8 +31,14 @@ export function PauseResumeButton({
   }
 
   return (
-    <Button variant="outline" size="sm" disabled={isPending} onClick={handleClick}>
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={handleClick}
+      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
+    >
+      {status === 'paused' ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
       {status === 'paused' ? 'Resume' : 'Pause'}
-    </Button>
+    </button>
   );
 }

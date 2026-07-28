@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { RotateCcw } from 'lucide-react';
 import { enrollmentSchema, type EnrollmentInput, PLAN_TYPES, PLAN_TYPE_LABELS, todayISO } from '@welldesk/shared';
 import { restartPlan } from '@/app/(dashboard)/clients/[clientId]/enrollments/actions';
 import { Button } from '@/components/ui/button';
@@ -53,7 +54,17 @@ export function RestartPlanDialog({ clientId }: { clientId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="secondary" />}>Restart Plan</DialogTrigger>
+      <DialogTrigger
+        render={
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          />
+        }
+      >
+        <RotateCcw className="h-3.5 w-3.5" />
+        Restart Plan
+      </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Restart plan</DialogTitle>

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Download, FileText, FileSpreadsheet, FileJson } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,14 +16,12 @@ export function ExportMenu({
   title,
   headers,
   rows,
-  size = 'sm',
 }: {
   label?: string;
   filenameBase: string;
   title: string;
   headers: string[];
   rows: (string | number)[][];
-  size?: 'sm' | 'default';
 }) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -41,8 +38,16 @@ export function ExportMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button type="button" variant="outline" size={size} disabled={isExporting} />}>
-        <Download className="h-4 w-4" />
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            disabled={isExporting}
+            className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
+          />
+        }
+      >
+        <Download className="h-3.5 w-3.5" />
         {isExporting ? 'Exporting…' : label}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

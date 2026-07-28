@@ -26,7 +26,7 @@ export type ScheduleItem = {
 export function TodaysSchedule({ items }: { items: ScheduleItem[] }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between">
+      <CardHeader className="flex items-center justify-between">
         <CardTitle className="text-base">Today&apos;s Schedule</CardTitle>
         <Link
           href="/appointments"

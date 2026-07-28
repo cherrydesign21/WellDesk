@@ -245,7 +245,6 @@ export default async function ClientDetailPage({
         />
 
         <div>
-          <h2 className="mb-3 text-lg font-medium">Logged Metrics</h2>
           <MetricsHistoryTable clientId={client.id} rows={rows} />
         </div>
       </div>
