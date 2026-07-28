@@ -29,6 +29,7 @@ export const createClientSchema = clientSchema.extend({
   startDate: z.string().min(1, 'Start date is required'),
   planAmount: z.number().nonnegative(),
   confirmDuplicate: z.boolean(),
+  targetWeightKg: z.number().positive().optional(),
 });
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;

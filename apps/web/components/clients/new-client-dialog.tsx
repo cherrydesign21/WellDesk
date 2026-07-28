@@ -85,6 +85,7 @@ export function NewClientDialog({
       notes: '',
       photoUrl: null,
       dietType: '',
+      targetWeightKg: undefined,
       planType: '1_month',
       customDurationDays: undefined,
       startDate: today,
@@ -255,18 +256,41 @@ export function NewClientDialog({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="dietType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input label="Diet type" placeholder="e.g. Low-Carb, Vegetarian" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dietType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input label="Diet type" placeholder="e.g. Low-Carb, Vegetarian" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="targetWeightKg"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        label="Target weight (kg)"
+                        type="number"
+                        step="0.1"
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="rounded-md border p-3">
               <p className="mb-3 text-sm font-medium">Enrollment</p>

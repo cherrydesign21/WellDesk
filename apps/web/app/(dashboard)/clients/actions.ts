@@ -113,20 +113,38 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
 
   const expiryDate = calculateExpiryDate(data.startDate, data.planType, data.customDurationDays);
 
-  const { error: enrollmentError } = await supabase.from('enrollments').insert({
-    practice_id: profile.practice_id,
-    client_id: client.id,
-    cycle_number: 1,
-    plan_type: data.planType,
-    custom_duration_days: data.planType === 'custom' ? data.customDurationDays : null,
-    start_date: data.startDate,
-    expiry_date: expiryDate,
-    plan_amount: data.planAmount,
-    created_by: profile.id,
-  });
+  const { data: enrollment, error: enrollmentError } = await supabase
+    .from('enrollments')
+    .insert({
+      practice_id: profile.practice_id,
+      client_id: client.id,
+      cycle_number: 1,
+      plan_type: data.planType,
+      custom_duration_days: data.planType === 'custom' ? data.customDurationDays : null,
+      start_date: data.startDate,
+      expiry_date: expiryDate,
+      plan_amount: data.planAmount,
+      created_by: profile.id,
+    })
+    .select('id')
+    .single();
 
   if (enrollmentError) {
     return { error: enrollmentError.message };
+  }
+
+  if (data.targetWeightKg) {
+    const { error: metricError } = await supabase.from('health_metrics').insert({
+      practice_id: profile.practice_id,
+      client_id: client.id,
+      enrollment_id: enrollment?.id ?? null,
+      recorded_at: new Date().toISOString(),
+      target_weight_kg: data.targetWeightKg,
+      created_by: profile.id,
+    });
+    if (metricError) {
+      return { error: metricError.message };
+    }
   }
 
   revalidatePath('/clients');

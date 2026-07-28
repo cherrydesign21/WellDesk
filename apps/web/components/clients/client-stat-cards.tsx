@@ -76,12 +76,15 @@ export function CurrentWeightCard({
   if (currentWeightKg === null) {
     return (
       <Card>
-        <CardContent className="py-4">
-          <CardIcon tone="info">
-            <Scale className="h-4.5 w-4.5" />
-          </CardIcon>
-          <p className="mt-3 text-xs text-muted-foreground">Current Weight</p>
-          <p className="text-sm text-muted-foreground">No weight logged yet</p>
+        <CardContent className="flex items-start justify-between py-4">
+          <div>
+            <CardIcon tone="info">
+              <Scale className="h-4.5 w-4.5" />
+            </CardIcon>
+            <p className="mt-3 text-xs text-muted-foreground">Current Weight</p>
+            <p className="text-sm text-muted-foreground">No weight logged yet</p>
+          </div>
+          {targetWeightKg !== null && <p className="text-xs text-muted-foreground">Goal: {targetWeightKg} kg</p>}
         </CardContent>
       </Card>
     );

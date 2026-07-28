@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, MessageSquare, PhoneCall, FileText, UtensilsCrossed, Plus } from 'lucide-react';
+import { MessageSquare, PhoneCall, FileText, UtensilsCrossed, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { NewAppointmentDialog } from '@/components/appointments/new-appointment-dialog';
@@ -71,19 +71,7 @@ export function ClientHeaderCard({
               {effectiveStatus}
             </Badge>
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            {client.email && (
-              <span className="flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5" /> {client.email}
-              </span>
-            )}
-            {client.phone && (
-              <span className="flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5" /> {client.phone}
-              </span>
-            )}
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2 text-sm sm:flex sm:flex-wrap sm:gap-x-8">
+          <div className="mt-2 grid grid-cols-2 gap-x-8 gap-y-2 text-sm sm:flex sm:flex-wrap sm:gap-x-8">
             {age !== null && (
               <div>
                 <p className="text-xs text-muted-foreground">Age</p>
