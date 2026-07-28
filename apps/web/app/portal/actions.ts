@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentClient } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/site';
+import { notifyPractice, getClientNotifications, markNotificationsRead } from '@/lib/notifications-store';
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -199,6 +200,13 @@ export async function createClientHealthMetric(values: HealthMetricInput) {
     return { error: error.message };
   }
 
+  await notifyPractice({
+    practiceId: client.practice_id,
+    type: 'metric_logged',
+    title: `${client.full_name} logged new numbers`,
+    href: `/clients/${client.id}`,
+  });
+
   revalidatePath('/portal');
   return { success: true };
 }
@@ -233,8 +241,30 @@ export async function requestAppointment(values: AppointmentRequestInput) {
     return { error: error.message };
   }
 
+  await notifyPractice({
+    practiceId: client.practice_id,
+    type: 'appointment_requested',
+    title: `${client.full_name} requested an appointment`,
+    body: `${data.date} at ${data.time}`,
+    href: '/appointments',
+  });
+
   revalidatePath('/portal');
   revalidatePath('/appointments');
   revalidatePath('/');
   return { success: true };
+}
+
+export async function fetchClientNotifications() {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) return [];
+  return getClientNotifications(supabase);
+}
+
+export async function markClientNotificationsRead() {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) return;
+  await markNotificationsRead(supabase);
 }

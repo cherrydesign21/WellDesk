@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { insertMealsAndItems } from '@/lib/diet-plan-mutations';
+import { notifyClient } from '@/lib/notifications-store';
 import { sendEmail } from '@/lib/email';
 import { renderDietPlanReadyEmail } from '@/lib/email-templates/diet-plan-ready';
 import { getSiteUrl } from '@/lib/site';
@@ -86,7 +87,11 @@ export async function createClientDietPlan(
 
   revalidatePath(`/clients/${clientId}/diet-plans`);
 
-  const { data: clientRow } = await supabase.from('clients').select('full_name, email').eq('id', clientId).single();
+  const { data: clientRow } = await supabase
+    .from('clients')
+    .select('full_name, email, user_id')
+    .eq('id', clientId)
+    .single();
   if (clientRow?.email) {
     const { subject, html, text } = renderDietPlanReadyEmail({
       clientFirstName: clientRow.full_name.trim().split(/\s+/)[0] ?? clientRow.full_name,
@@ -97,6 +102,16 @@ export async function createClientDietPlan(
       portalUrl: `${getSiteUrl()}/portal`,
     });
     await sendEmail({ to: clientRow.email, subject, html, text });
+  }
+  if (clientRow?.user_id) {
+    await notifyClient({
+      practiceId: profile.practice_id,
+      clientId,
+      type: 'diet_plan_ready',
+      title: 'Your new diet plan is ready',
+      body: data.name,
+      href: '/portal/diet-plans',
+    });
   }
 
   return { id: plan.id };

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { notifyClient } from '@/lib/notifications-store';
 import { appointmentSchema, zonedTimeToUtcIso, type AppointmentInput, type AppointmentStatus } from '@welldesk/shared';
 
 export async function createAppointment(values: AppointmentInput) {
@@ -37,6 +38,22 @@ export async function createAppointment(values: AppointmentInput) {
     return { error: error.message };
   }
 
+  const { data: clientRow } = await supabase
+    .from('clients')
+    .select('user_id')
+    .eq('id', data.clientId)
+    .maybeSingle();
+  if (clientRow?.user_id) {
+    await notifyClient({
+      practiceId: profile.practice_id,
+      clientId: data.clientId,
+      type: 'appointment_scheduled',
+      title: 'A new appointment was scheduled for you',
+      body: `${data.date} at ${data.time}`,
+      href: '/portal',
+    });
+  }
+
   revalidatePath('/appointments');
   revalidatePath(`/clients/${data.clientId}`);
   revalidatePath('/');
@@ -45,10 +62,33 @@ export async function createAppointment(values: AppointmentInput) {
 
 export async function updateAppointmentStatus(appointmentId: string, status: AppointmentStatus) {
   const supabase = await createSupabaseClient();
+
+  const { data: existing } = await supabase
+    .from('appointments')
+    .select('client_id, practice_id, status, starts_at, clients(user_id)')
+    .eq('id', appointmentId)
+    .maybeSingle();
+
   const { error } = await supabase.from('appointments').update({ status }).eq('id', appointmentId);
 
   if (error) {
     return { error: error.message };
+  }
+
+  if (existing?.status === 'requested' && (status === 'scheduled' || status === 'cancelled')) {
+    const clientRel = Array.isArray(existing.clients) ? existing.clients[0] : existing.clients;
+    if (clientRel?.user_id) {
+      await notifyClient({
+        practiceId: existing.practice_id,
+        clientId: existing.client_id,
+        type: status === 'scheduled' ? 'appointment_confirmed' : 'appointment_declined',
+        title:
+          status === 'scheduled'
+            ? 'Your appointment request was confirmed'
+            : 'Your appointment request was declined',
+        href: '/portal',
+      });
+    }
   }
 
   revalidatePath('/appointments');
