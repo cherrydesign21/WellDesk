@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import type { NotificationItem } from '@/lib/notifications';
 import type { StoredNotification } from '@/lib/notifications-store';
 import { fetchProfileNotifications, markProfileNotificationsRead } from '@/app/(dashboard)/notifications-actions';
+import { usePolling } from '@/lib/use-polling';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -28,9 +29,9 @@ function timeAgo(iso: string) {
 export function NotificationsMenu({ items }: { items: NotificationItem[] }) {
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
 
-  useEffect(() => {
+  usePolling(() => {
     fetchProfileNotifications().then(setNotifications);
-  }, []);
+  }, 30000);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
   const count = unreadCount + items.length;

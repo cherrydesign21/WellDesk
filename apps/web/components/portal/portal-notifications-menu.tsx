@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import type { StoredNotification } from '@/lib/notifications-store';
 import { fetchClientNotifications, markClientNotificationsRead } from '@/app/portal/actions';
+import { usePolling } from '@/lib/use-polling';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,9 +28,9 @@ function timeAgo(iso: string) {
 export function PortalNotificationsMenu() {
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
 
-  useEffect(() => {
+  usePolling(() => {
     fetchClientNotifications().then(setNotifications);
-  }, []);
+  }, 30000);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
