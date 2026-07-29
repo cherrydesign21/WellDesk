@@ -7,6 +7,7 @@ import type { NotificationItem } from '@/lib/notifications';
 import type { StoredNotification } from '@/lib/notifications-store';
 import { fetchProfileNotifications, markProfileNotificationsRead } from '@/app/(dashboard)/notifications-actions';
 import { usePolling } from '@/lib/use-polling';
+import { useRealtimeInsert } from '@/lib/use-realtime-insert';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -26,12 +27,15 @@ function timeAgo(iso: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export function NotificationsMenu({ items }: { items: NotificationItem[] }) {
+export function NotificationsMenu({ items, profileId }: { items: NotificationItem[]; profileId: string }) {
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
 
-  usePolling(() => {
+  function refresh() {
     fetchProfileNotifications().then(setNotifications);
-  }, 30000);
+  }
+
+  usePolling(refresh, 30000);
+  useRealtimeInsert('activity_notifications', `recipient_profile_id=eq.${profileId}`, refresh);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
   const count = unreadCount + items.length;

@@ -55,8 +55,14 @@ export function renderDietPlanReadyEmail({
             </tr>
             <tr>
               <td style="padding:20px 32px; background-color:#f7f1e3; text-align:center;">
-                <p style="margin:0; font-size:12px; color:#8a7a63;">
+                <p style="margin:0 0 8px; font-size:12px; color:#8a7a63;">
                   Sent by ${practiceName} via WellDesk — an automated notification from your dietitian.
+                </p>
+                <p style="margin:0 0 4px; font-size:11px; color:#8a7a63;">© WellDesk. All rights reserved.</p>
+                <p style="margin:0; font-size:11px;">
+                  <a href="https://www.welldesk.app/privacy" style="color:#8a7a63; text-decoration:underline;">Privacy Policy</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="https://www.welldesk.app/terms" style="color:#8a7a63; text-decoration:underline;">Terms of Use</a>
                 </p>
               </td>
             </tr>

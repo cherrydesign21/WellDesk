@@ -28,7 +28,7 @@ export function ProfileMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant="ghost" className="h-auto gap-2 rounded-full border border-border bg-card px-3 py-1.5" />}
+        render={<Button variant="ghost" className="h-auto gap-2 rounded-full p-0" />}
       >
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

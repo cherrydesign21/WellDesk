@@ -96,6 +96,18 @@ export function NewClientDialog({
 
   const planType = form.watch('planType');
 
+  function handleCreateSuccess(result: { portalInviteWarning?: string }, hasEmail: boolean) {
+    if (hasEmail && result.portalInviteWarning) {
+      toast.success('Client added');
+      toast.warning(`Portal invite not sent: ${result.portalInviteWarning}`);
+    } else {
+      toast.success(hasEmail ? 'Client added — portal invite sent' : 'Client added');
+    }
+    setOpen(false);
+    setDuplicate(null);
+    form.reset();
+  }
+
   function submit(values: CreateClientInput) {
     startTransition(async () => {
       const result = await createClientWithEnrollment(values);
@@ -107,24 +119,19 @@ export function NewClientDialog({
         toast.error(result.error);
         return;
       }
-      toast.success('Client added');
-      setOpen(false);
-      setDuplicate(null);
-      form.reset();
+      handleCreateSuccess(result, !!values.email);
     });
   }
 
   function saveAnyway() {
     startTransition(async () => {
-      const result = await createClientWithEnrollment({ ...form.getValues(), confirmDuplicate: true });
+      const values = form.getValues();
+      const result = await createClientWithEnrollment({ ...values, confirmDuplicate: true });
       if (result?.error) {
         toast.error(result.error);
         return;
       }
-      toast.success('Client added');
-      setOpen(false);
-      setDuplicate(null);
-      form.reset();
+      handleCreateSuccess(result, !!values.email);
     });
   }
 

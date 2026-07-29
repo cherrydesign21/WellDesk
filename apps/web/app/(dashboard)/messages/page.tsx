@@ -15,7 +15,7 @@ export default async function MessagesPage({
 
   const { data: clients } = await supabase
     .from('clients')
-    .select('id, full_name, photo_url')
+    .select('id, full_name, photo_url, phone')
     .neq('status', 'archived')
     .order('full_name');
 

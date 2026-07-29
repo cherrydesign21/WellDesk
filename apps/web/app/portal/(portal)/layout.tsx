@@ -5,6 +5,7 @@ import { AppThemeBody } from '@/components/shell/app-theme-body';
 import { PortalSidebar } from '@/components/portal/portal-sidebar';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
 import { PortalNotificationsMenu } from '@/components/portal/portal-notifications-menu';
+import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
 import { Button } from '@/components/ui/button';
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +31,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <div />
 
           <div className="flex shrink-0 items-center justify-self-end gap-3">
-            <PortalNotificationsMenu />
+            <PortalNotificationsMenu clientId={client.id} />
             <span className="hidden text-sm text-muted-foreground sm:inline">{client.full_name}</span>
             <form action={portalLogout}>
               <Button type="submit" variant="ghost">
@@ -41,6 +42,8 @@ export default async function PortalLayout({ children }: { children: React.React
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto p-6">{children}</main>
+
+        <DashboardFooter />
       </div>
 
       <PortalLogMetricDialog

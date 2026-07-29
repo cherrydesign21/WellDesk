@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchMyThreadMessages, sendClientMessage } from '@/app/portal/actions';
 import type { MessageRow } from '@/lib/messages-store';
@@ -20,7 +20,13 @@ function timeLabel(iso: string) {
     : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-export function PortalMessageThread() {
+export function PortalMessageThread({
+  practiceName,
+  practicePhone,
+}: {
+  practiceName: string;
+  practicePhone: string | null;
+}) {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [draft, setDraft] = useState('');
   const [isPending, startTransition] = useTransition();
@@ -61,6 +67,16 @@ export function PortalMessageThread() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2.5 border-b border-border px-4 py-3">
+        <p className="flex-1 font-medium">{practiceName}</p>
+        {practicePhone && (
+          <Button variant="ghost" size="icon-sm" title="Call" render={<a href={`tel:${practicePhone}`} />}>
+            <Phone className="h-4 w-4" />
+            <span className="sr-only">Call</span>
+          </Button>
+        )}
+      </div>
+
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <EmptyState icon={MessageCircle} title="No messages yet" description="Send a message to reach your dietitian" />

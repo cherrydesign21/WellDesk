@@ -6,6 +6,7 @@ import { Bell } from 'lucide-react';
 import type { StoredNotification } from '@/lib/notifications-store';
 import { fetchClientNotifications, markClientNotificationsRead } from '@/app/portal/actions';
 import { usePolling } from '@/lib/use-polling';
+import { useRealtimeInsert } from '@/lib/use-realtime-insert';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,12 +26,15 @@ function timeAgo(iso: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export function PortalNotificationsMenu() {
+export function PortalNotificationsMenu({ clientId }: { clientId: string }) {
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
 
-  usePolling(() => {
+  function refresh() {
     fetchClientNotifications().then(setNotifications);
-  }, 30000);
+  }
+
+  usePolling(refresh, 30000);
+  useRealtimeInsert('activity_notifications', `recipient_client_id=eq.${clientId}`, refresh);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 

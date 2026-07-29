@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentProfile } from '@/lib/auth';
+import { invitePortalAccess } from '@/lib/portal-invite';
 import {
   createClientSchema,
   clientSchema,
@@ -148,6 +149,24 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
   }
 
   revalidatePath('/clients');
+
+  // Best-effort — the client record itself is already saved either way.
+  // A failure here (e.g. email already used for portal access elsewhere)
+  // just means the dietitian falls back to the manual "Invite to Portal"
+  // button, which surfaces the same error message.
+  if (data.email) {
+    const inviteResult = await invitePortalAccess(supabase, {
+      clientId: client.id,
+      email: data.email,
+      fullName: data.fullName,
+      practiceName: profile.practices?.name ?? 'WellDesk',
+      dietitianName: profile.full_name,
+    });
+    if ('error' in inviteResult) {
+      return { success: true, portalInviteWarning: inviteResult.error };
+    }
+  }
+
   return { success: true };
 }
 

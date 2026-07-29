@@ -36,7 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           <div className="flex shrink-0 items-center justify-self-end gap-2">
-            <NotificationsMenu items={notifications} />
+            <NotificationsMenu items={notifications} profileId={profile.id} />
             <ProfileMenu
               fullName={profile.full_name}
               email={user.email ?? ''}

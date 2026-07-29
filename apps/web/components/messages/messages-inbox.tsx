@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { MessageCircle, Send, Search } from 'lucide-react';
+import { MessageCircle, Send, Search, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   fetchThreadMessages,
@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 
-type ClientRow = { id: string; full_name: string; photo_url: string | null };
+type ClientRow = { id: string; full_name: string; photo_url: string | null; phone: string | null };
 
 const POLL_MS = 6000;
 
@@ -185,7 +185,18 @@ export function MessagesInbox({
                 <AvatarImage src={selectedClient.photo_url ?? undefined} alt="" />
                 <AvatarFallback>{initials(selectedClient.full_name)}</AvatarFallback>
               </Avatar>
-              <p className="font-medium">{selectedClient.full_name}</p>
+              <p className="flex-1 font-medium">{selectedClient.full_name}</p>
+              {selectedClient.phone && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  title="Call"
+                  render={<a href={`tel:${selectedClient.phone}`} />}
+                >
+                  <Phone className="h-4 w-4" />
+                  <span className="sr-only">Call</span>
+                </Button>
+              )}
             </div>
 
             <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
