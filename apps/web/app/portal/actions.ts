@@ -7,6 +7,7 @@ import { getCurrentClient } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/site';
 import { notifyPractice, getClientNotifications, markNotificationsRead } from '@/lib/notifications-store';
 import { getThreadMessages, sendMessageAsClient, markThreadRead } from '@/lib/messages-store';
+import { getProgressPhotos } from '@/lib/progress-photos-store';
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -314,5 +315,54 @@ export async function sendClientMessage(values: MessageInput) {
   });
 
   revalidatePath('/portal/messages');
+  return { success: true };
+}
+
+export async function fetchMyProgressPhotos() {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) return [];
+  return getProgressPhotos(supabase, result.client.id);
+}
+
+export async function addMyProgressPhoto(storagePath: string, caption?: string) {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+  const { client } = result;
+
+  const { error } = await supabase.from('progress_photos').insert({
+    practice_id: client.practice_id,
+    client_id: client.id,
+    storage_path: storagePath,
+    caption: caption || null,
+    uploaded_by_type: 'client',
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/portal/progress-photos');
+  return { success: true };
+}
+
+export async function deleteMyProgressPhoto(photoId: string, storagePath: string) {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+
+  const { error } = await supabase.from('progress_photos').delete().eq('id', photoId);
+  if (error) {
+    return { error: error.message };
+  }
+
+  await supabase.storage.from('progress-photos').remove([storagePath]);
+
+  revalidatePath('/portal/progress-photos');
   return { success: true };
 }

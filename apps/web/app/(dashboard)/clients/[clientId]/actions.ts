@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { getProgressPhotos } from '@/lib/progress-photos-store';
 import { healthMetricSchema, type HealthMetricInput } from '@welldesk/shared';
 
 export async function createHealthMetric(clientId: string, values: HealthMetricInput) {
@@ -63,6 +64,51 @@ export async function deleteHealthMetric(clientId: string, metricId: string) {
   if (error) {
     return { error: error.message };
   }
+
+  revalidatePath(`/clients/${clientId}`);
+  return { success: true };
+}
+
+export async function fetchProgressPhotos(clientId: string) {
+  const supabase = await createSupabaseClient();
+  const result = await getCurrentProfile(supabase);
+  if (!result) return [];
+  return getProgressPhotos(supabase, clientId);
+}
+
+export async function addProgressPhoto(clientId: string, storagePath: string, caption?: string) {
+  const supabase = await createSupabaseClient();
+  const result = await getCurrentProfile(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+  const { profile } = result;
+
+  const { error } = await supabase.from('progress_photos').insert({
+    practice_id: profile.practice_id,
+    client_id: clientId,
+    storage_path: storagePath,
+    caption: caption || null,
+    uploaded_by_type: 'profile',
+    uploaded_by_profile_id: profile.id,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/clients/${clientId}`);
+  return { success: true };
+}
+
+export async function deleteProgressPhoto(clientId: string, photoId: string, storagePath: string) {
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.from('progress_photos').delete().eq('id', photoId);
+  if (error) {
+    return { error: error.message };
+  }
+
+  await supabase.storage.from('progress-photos').remove([storagePath]);
 
   revalidatePath(`/clients/${clientId}`);
   return { success: true };

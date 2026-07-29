@@ -26,6 +26,8 @@ import {
   PaymentStatCard,
   NextAppointmentCard,
 } from '@/components/clients/client-stat-cards';
+import { ProgressPhotosCard } from '@/components/clients/progress-photos-card';
+import { getProgressPhotos } from '@/lib/progress-photos-store';
 import type { MetricRow } from '@/components/metrics/types';
 
 const PAYMENT_EXPORT_HEADERS = ['Date', 'Amount', 'Mode', 'Reference', 'Plan Period'];
@@ -89,6 +91,8 @@ export default async function ClientDetailPage({
       plan_end: enrollment?.expiry_date ?? null,
     };
   });
+
+  const progressPhotos = await getProgressPhotos(supabase, clientId);
 
   const { data: paymentSummary } = latestEnrollment
     ? await supabase
@@ -301,6 +305,8 @@ export default async function ClientDetailPage({
           <PaymentsHistoryTable clientId={client.id} rows={paymentRows} showReference={false} />
         </div>
       </div>
+
+      <ProgressPhotosCard clientId={client.id} practiceId={result.profile.practice_id} initialPhotos={progressPhotos} />
 
       <div className="flex justify-end">
         <LogMetricDialog clientId={client.id} />

@@ -1,12 +1,13 @@
 'use client';
 
-import { LayoutDashboard, Settings, UtensilsCrossed, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Settings, UtensilsCrossed, MessageCircle, Camera } from 'lucide-react';
 import { AppSidebar } from '@/components/shell/app-sidebar';
 import type { SidebarNavItem } from '@/components/shell/app-sidebar-nav';
 
 const NAV_ITEMS: SidebarNavItem[] = [
   { href: '/portal', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portal/diet-plans', label: 'Diet Plans', icon: UtensilsCrossed },
+  { href: '/portal/progress-photos', label: 'Progress Photos', icon: Camera },
   { href: '/portal/messages', label: 'Messages', icon: MessageCircle },
 ];
 const BOTTOM_ITEMS: SidebarNavItem[] = [{ href: '/portal/account', label: 'Account', icon: Settings }];
