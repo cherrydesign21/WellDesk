@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, Users, UtensilsCrossed, Wallet, CalendarDays, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, UtensilsCrossed, Wallet, CalendarDays, MessageCircle, Settings } from 'lucide-react';
 import { AppSidebar } from '@/components/shell/app-sidebar';
 import type { SidebarNavItem } from '@/components/shell/app-sidebar-nav';
 
@@ -14,6 +14,7 @@ const NAV_ITEMS: SidebarNavItem[] = [
   { href: '/diet-plans/templates', label: 'Diet Plan Templates', icon: UtensilsCrossed },
   { href: '/payments', label: 'Payments', icon: Wallet },
   { href: '/appointments', label: 'Appointments', icon: CalendarDays },
+  { href: '/messages', label: 'Messages', icon: MessageCircle },
 ];
 
 const BOTTOM_ITEMS: SidebarNavItem[] = [{ href: '/settings/account', label: 'Settings', icon: Settings }];

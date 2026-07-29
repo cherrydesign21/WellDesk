@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentClient } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/site';
 import { notifyPractice, getClientNotifications, markNotificationsRead } from '@/lib/notifications-store';
+import { getThreadMessages, sendMessageAsClient, markThreadRead } from '@/lib/messages-store';
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -13,6 +14,7 @@ import {
   changePasswordSchema,
   healthMetricSchema,
   appointmentRequestSchema,
+  messageSchema,
   zonedTimeToUtcIso,
   type LoginInput,
   type ForgotPasswordInput,
@@ -20,6 +22,7 @@ import {
   type ChangePasswordInput,
   type HealthMetricInput,
   type AppointmentRequestInput,
+  type MessageInput,
 } from '@welldesk/shared';
 
 export async function portalLogin(values: LoginInput) {
@@ -267,4 +270,49 @@ export async function markClientNotificationsRead() {
   const result = await getCurrentClient(supabase);
   if (!result) return;
   await markNotificationsRead(supabase);
+}
+
+export async function fetchMyThreadMessages() {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) return [];
+
+  const messages = await getThreadMessages(supabase, result.client.id);
+  await markThreadRead(supabase, result.client.id, 'client');
+  return messages;
+}
+
+export async function sendClientMessage(values: MessageInput) {
+  const parsed = messageSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+  const { client } = result;
+
+  const { error } = await sendMessageAsClient(supabase, {
+    practiceId: client.practice_id,
+    clientId: client.id,
+    body: parsed.data.body,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await notifyPractice({
+    practiceId: client.practice_id,
+    type: 'message_received',
+    title: `New message from ${client.full_name}`,
+    body: parsed.data.body,
+    href: `/messages?clientId=${client.id}`,
+  });
+
+  revalidatePath('/portal/messages');
+  return { success: true };
 }
