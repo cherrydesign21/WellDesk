@@ -62,6 +62,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // .html is excluded for search-engine site-verification files (e.g.
+    // Google's google<token>.html) — no app route ever resolves to a
+    // literal .html path, so this can't shadow real pages.
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 };
