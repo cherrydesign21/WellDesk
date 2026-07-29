@@ -58,6 +58,20 @@ export function renderDietPlanReadyEmail({
                 <p style="margin:0 0 8px; font-size:12px; color:#8a7a63;">
                   Sent by ${practiceName} via WellDesk — an automated notification from your dietitian.
                 </p>
+                <!--
+                  Social links are placeholder "#" hrefs — swap these four for
+                  the real account URLs once they exist (Instagram, Product
+                  Hunt, Facebook, LinkedIn).
+                -->
+                <p style="margin:0 0 8px; font-size:11px;">
+                  <a href="#" style="color:#8a7a63; text-decoration:underline;">Instagram</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="#" style="color:#8a7a63; text-decoration:underline;">Product Hunt</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="#" style="color:#8a7a63; text-decoration:underline;">Facebook</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="#" style="color:#8a7a63; text-decoration:underline;">LinkedIn</a>
+                </p>
                 <p style="margin:0 0 4px; font-size:11px; color:#8a7a63;">© WellDesk. All rights reserved.</p>
                 <p style="margin:0; font-size:11px;">
                   <a href="https://www.welldesk.app/privacy" style="color:#8a7a63; text-decoration:underline;">Privacy Policy</a>
