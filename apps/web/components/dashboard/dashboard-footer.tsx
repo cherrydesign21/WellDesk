@@ -5,7 +5,7 @@ export function DashboardFooter() {
   return (
     <footer className="flex flex-col items-center justify-between gap-2 border-t px-6 py-3 text-xs text-muted-foreground sm:flex-row">
       <div className="flex items-center gap-2">
-        <BrandLogo iconClassName="h-4 w-4" wordmarkClassName="h-3 w-auto opacity-70" />
+        <BrandLogo className="h-4 w-auto opacity-70" />
         <span>© {new Date().getFullYear()}</span>
       </div>
       <div className="flex items-center gap-4">

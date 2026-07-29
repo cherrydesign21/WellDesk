@@ -29,7 +29,7 @@ export function AuthShell({
       <div className="flex w-full flex-col justify-center px-4 py-10 sm:px-10 lg:w-1/2 lg:px-16">
         <div className="mx-auto w-full max-w-sm">
           <Link href="/" className="mb-10 flex justify-center">
-            <BrandLogo iconClassName="h-8 w-8" wordmarkClassName="h-6 w-auto" />
+            <BrandLogo className="h-8 w-auto" />
           </Link>
           {children}
         </div>
