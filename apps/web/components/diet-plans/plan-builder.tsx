@@ -1,7 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
-import { useFieldArray, useForm, type Control } from 'react-hook-form';
+import { useFieldArray, useForm, type Control, type UseFormSetValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Plus, Trash2 } from 'lucide-react';
@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { FoodSearchPopover } from '@/components/diet-plans/food-search-popover';
+import type { FoodSearchResult } from '@/app/api/food-search/route';
 
 function todayForInput() {
   return new Date().toISOString().slice(0, 10);
@@ -23,11 +25,37 @@ export function defaultMeals(): DietPlanInput['meals'] {
   }));
 }
 
-function MealSlotEditor({ control, mealIndex, onRemoveMeal }: { control: Control<DietPlanInput>; mealIndex: number; onRemoveMeal: () => void }) {
+function MealSlotEditor({
+  control,
+  setValue,
+  mealIndex,
+  onRemoveMeal,
+}: {
+  control: Control<DietPlanInput>;
+  setValue: UseFormSetValue<DietPlanInput>;
+  mealIndex: number;
+  onRemoveMeal: () => void;
+}) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: `meals.${mealIndex}.items`,
   });
+
+  function handleFoodSelect(result: FoodSearchResult, itemIndex: number) {
+    setValue(`meals.${mealIndex}.items.${itemIndex}.foodItem`, result.description);
+    setValue(`meals.${mealIndex}.items.${itemIndex}.quantity`, '100g');
+    if (result.calories != null) {
+      setValue(`meals.${mealIndex}.items.${itemIndex}.calories`, result.calories);
+    }
+    const macroParts = [
+      result.proteinG != null ? `P ${result.proteinG}g` : null,
+      result.fatG != null ? `F ${result.fatG}g` : null,
+      result.carbsG != null ? `C ${result.carbsG}g` : null,
+    ].filter(Boolean);
+    if (macroParts.length > 0) {
+      setValue(`meals.${mealIndex}.items.${itemIndex}.notes`, macroParts.join(' · '));
+    }
+  }
 
   return (
     <Card>
@@ -50,7 +78,8 @@ function MealSlotEditor({ control, mealIndex, onRemoveMeal }: { control: Control
       </CardHeader>
       <CardContent className="space-y-3">
         {fields.map((item, itemIndex) => (
-          <div key={item.id} className="grid grid-cols-[2fr_1fr_1fr_2fr_auto] items-start gap-2">
+          <div key={item.id} className="grid grid-cols-[auto_2fr_1fr_1fr_2fr_auto] items-start gap-2">
+            <FoodSearchPopover onSelect={(result) => handleFoodSelect(result, itemIndex)} />
             <FormField
               control={control}
               name={`meals.${mealIndex}.items.${itemIndex}.foodItem`}
@@ -212,6 +241,7 @@ export function PlanBuilder({
             <MealSlotEditor
               key={meal.id}
               control={form.control}
+              setValue={form.setValue}
               mealIndex={index}
               onRemoveMeal={() => removeMeal(index)}
             />
