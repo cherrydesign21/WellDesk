@@ -1,33 +1,142 @@
 import Link from 'next/link';
+import { Building2, Users, Stethoscope, Wallet, type LucideIcon } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Building2 } from 'lucide-react';
+import { AnimatedCounter } from '@/components/ui/animated-counter';
+import { AdminDashboardCharts } from '@/components/admin/admin-dashboard-charts';
+
+const STAT_ICON_CLASSES = {
+  primary: 'bg-primary/15 text-primary',
+  success: 'bg-success/15 text-(--success-700)',
+  info: 'bg-info/15 text-(--info-700)',
+  warning: 'bg-warning/15 text-(--warning-700)',
+} as const;
+
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  tone,
+  prefix,
+  badge,
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  tone: keyof typeof STAT_ICON_CLASSES;
+  prefix?: string;
+  badge?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-start justify-between py-4">
+        <div>
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${STAT_ICON_CLASSES[tone]}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <p className="mt-3 text-2xl font-semibold">
+            {prefix}
+            <AnimatedCounter value={value} />
+          </p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
+        {badge && (
+          <Badge variant="success" className="shrink-0">
+            {badge}
+          </Badge>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default async function AdminPracticesPage() {
   const supabase = createAdminClient();
 
-  const { data: practices } = await supabase
-    .from('practices')
-    .select('id, name, tagline, owner_user_id, suspended_at, created_at')
-    .order('created_at', { ascending: false });
+  const [{ data: practices }, { data: clients }, { data: owners }, { data: payments }] = await Promise.all([
+    supabase.from('practices').select('id, name, tagline, owner_user_id, suspended_at, created_at').order('created_at', { ascending: false }),
+    supabase.from('clients').select('practice_id'),
+    supabase.from('profiles').select('id, full_name, practice_id').eq('role', 'owner'),
+    supabase.from('payments').select('practice_id, amount, payment_date'),
+  ]);
 
-  const { data: clientCounts } = await supabase.from('clients').select('practice_id');
   const countByPractice = new Map<string, number>();
-  for (const c of clientCounts ?? []) {
+  for (const c of clients ?? []) {
     countByPractice.set(c.practice_id, (countByPractice.get(c.practice_id) ?? 0) + 1);
   }
 
-  const { data: owners } = await supabase.from('profiles').select('id, full_name, practice_id').eq('role', 'owner');
   const ownerByPractice = new Map(owners?.map((o) => [o.practice_id, o.full_name]));
+
+  const revenueByPractice = new Map<string, number>();
+  for (const p of payments ?? []) {
+    revenueByPractice.set(p.practice_id, (revenueByPractice.get(p.practice_id) ?? 0) + Number(p.amount));
+  }
+
+  // Stats
+  const totalPractices = practices?.length ?? 0;
+  const activePractices = (practices ?? []).filter((p) => !p.suspended_at).length;
+  const suspendedPractices = totalPractices - activePractices;
+  const totalDietitians = owners?.length ?? 0;
+  const totalClients = clients?.length ?? 0;
+  const totalRevenue = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+
+  const now = new Date();
+  const currentMonthKey = now.toISOString().slice(0, 7);
+  const newPracticesThisMonth = (practices ?? []).filter((p) => p.created_at?.slice(0, 7) === currentMonthKey).length;
+
+  // 6-month trends
+  const monthKeys: string[] = [];
+  const monthLabels = new Map<string, string>();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthKeys.push(key);
+    monthLabels.set(key, d.toLocaleString('en-US', { month: 'short' }));
+  }
+
+  const revenueByMonth = new Map<string, number>(monthKeys.map((k) => [k, 0]));
+  for (const p of payments ?? []) {
+    const key = p.payment_date.slice(0, 7);
+    if (revenueByMonth.has(key)) revenueByMonth.set(key, (revenueByMonth.get(key) ?? 0) + Number(p.amount));
+  }
+  const revenueTrend = monthKeys.map((key) => ({ month: monthLabels.get(key)!, value: revenueByMonth.get(key) ?? 0 }));
+
+  const signupsByMonth = new Map<string, number>(monthKeys.map((k) => [k, 0]));
+  for (const p of practices ?? []) {
+    const key = p.created_at?.slice(0, 7);
+    if (key && signupsByMonth.has(key)) signupsByMonth.set(key, (signupsByMonth.get(key) ?? 0) + 1);
+  }
+  const signupTrend = monthKeys.map((key) => ({ month: monthLabels.get(key)!, value: signupsByMonth.get(key) ?? 0 }));
+
+  const statusBreakdown = [
+    { name: 'Active', value: activePractices, color: 'var(--chart-2)' },
+    { name: 'Suspended', value: suspendedPractices, color: 'var(--chart-5)' },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Practices</h1>
-        <p className="text-sm text-muted-foreground">{practices?.length ?? 0} practice(s) on the platform</p>
+        <h1 className="text-2xl font-semibold">Overview</h1>
+        <p className="text-sm text-muted-foreground">Platform-wide stats across every practice</p>
       </div>
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatCard
+          label="Total Practices"
+          value={totalPractices}
+          icon={Building2}
+          tone="primary"
+          badge={newPracticesThisMonth > 0 ? `+${newPracticesThisMonth} this mo.` : undefined}
+        />
+        <StatCard label="Dietitians" value={totalDietitians} icon={Stethoscope} tone="info" />
+        <StatCard label="Clients" value={totalClients} icon={Users} tone="success" />
+        <StatCard label="Platform Revenue" value={totalRevenue} icon={Wallet} tone="warning" prefix="₹" />
+      </div>
+
+      <AdminDashboardCharts revenueTrend={revenueTrend} signupTrend={signupTrend} statusBreakdown={statusBreakdown} />
 
       <div className="rounded-md border">
         <Table>
@@ -36,6 +145,7 @@ export default async function AdminPracticesPage() {
               <TableHead>Practice</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Clients</TableHead>
+              <TableHead>Revenue</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
@@ -43,7 +153,7 @@ export default async function AdminPracticesPage() {
           <TableBody>
             {(!practices || practices.length === 0) && (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <EmptyState icon={Building2} title="No practices yet" compact />
                 </TableCell>
               </TableRow>
@@ -57,6 +167,7 @@ export default async function AdminPracticesPage() {
                 </TableCell>
                 <TableCell>{ownerByPractice.get(p.id) ?? '—'}</TableCell>
                 <TableCell>{countByPractice.get(p.id) ?? 0}</TableCell>
+                <TableCell>₹{(revenueByPractice.get(p.id) ?? 0).toLocaleString('en-IN')}</TableCell>
                 <TableCell className="whitespace-nowrap">{p.created_at.slice(0, 10)}</TableCell>
                 <TableCell>
                   {p.suspended_at ? (

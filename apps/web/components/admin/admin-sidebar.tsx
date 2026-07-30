@@ -11,7 +11,7 @@ const NAV_ITEMS: SidebarNavItem[] = [
   { href: '/admin/testimonials', label: 'Testimonials', icon: Quote },
 ];
 
-const BOTTOM_ITEMS: SidebarNavItem[] = [{ href: '/', label: 'Exit to Dashboard', icon: LayoutDashboard }];
+const BOTTOM_ITEMS: SidebarNavItem[] = [{ href: '/dashboard', label: 'Exit to Dashboard', icon: LayoutDashboard }];
 
 export function AdminSidebar() {
   return (
