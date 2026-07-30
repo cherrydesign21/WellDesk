@@ -24,7 +24,7 @@ export async function login(values: LoginInput) {
     return { error: error.message };
   }
 
-  redirect('/');
+  redirect('/dashboard');
 }
 
 export async function register(values: RegisterInput) {
@@ -57,7 +57,7 @@ export async function register(values: RegisterInput) {
     return { message: 'Account created — check your email to confirm before logging in.' };
   }
 
-  redirect('/');
+  redirect('/dashboard');
 }
 
 export async function logout() {

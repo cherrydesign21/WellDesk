@@ -28,7 +28,7 @@ export function ResetPasswordForm() {
         return;
       }
       toast.success('Password updated');
-      router.push('/');
+      router.push('/dashboard');
     });
   }
 

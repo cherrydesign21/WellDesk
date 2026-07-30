@@ -9,7 +9,7 @@ import type { SidebarNavItem } from '@/components/shell/app-sidebar-nav';
 // inside a 'use client' module like this one, not passed down from a
 // Server Component layout.
 const NAV_ITEMS: SidebarNavItem[] = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/diet-plans/templates', label: 'Diet Plan Templates', icon: UtensilsCrossed },
   { href: '/payments', label: 'Payments', icon: Wallet },
@@ -21,6 +21,11 @@ const BOTTOM_ITEMS: SidebarNavItem[] = [{ href: '/settings/account', label: 'Set
 
 export function DashboardSidebar() {
   return (
-    <AppSidebar navItems={NAV_ITEMS} bottomItems={BOTTOM_ITEMS} storageKey="welldesk-sidebar-collapsed" />
+    <AppSidebar
+      navItems={NAV_ITEMS}
+      bottomItems={BOTTOM_ITEMS}
+      homeHref="/dashboard"
+      storageKey="welldesk-sidebar-collapsed"
+    />
   );
 }

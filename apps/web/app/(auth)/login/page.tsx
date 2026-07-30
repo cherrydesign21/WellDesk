@@ -8,7 +8,7 @@ import { AuthShell } from '@/components/auth/auth-shell';
 export default async function LoginPage() {
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
-  if (profile) redirect('/');
+  if (profile) redirect('/dashboard');
 
   const testimonials = await getActiveTestimonials(supabase);
 

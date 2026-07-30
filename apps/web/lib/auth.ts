@@ -41,7 +41,7 @@ export async function requireProfile() {
 export async function requireSuperAdmin() {
   const result = await requireProfile();
   if (!result.profile.is_super_admin) {
-    redirect('/');
+    redirect('/dashboard');
   }
   return result;
 }
