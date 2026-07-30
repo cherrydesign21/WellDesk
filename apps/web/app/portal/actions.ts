@@ -33,9 +33,23 @@ export async function portalLogin(values: LoginInput) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     return { error: error.message };
+  }
+
+  // Mirror of the same check on the dietitian login — a dietitian who lands
+  // on this form by mistake would otherwise authenticate successfully and
+  // then get silently bounced back here by requireClient() with no
+  // explanation. Route them to their actual dashboard instead.
+  const { data: client } = await supabase.from('clients').select('id').eq('user_id', data.user.id).maybeSingle();
+  if (!client) {
+    const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle();
+    if (profile) {
+      redirect('/dashboard');
+    }
+    await supabase.auth.signOut();
+    return { error: 'No WellDesk client account found for this email.' };
   }
 
   redirect('/portal');

@@ -19,9 +19,24 @@ export async function login(values: LoginInput) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     return { error: error.message };
+  }
+
+  // Auth is shared between dietitian and client accounts, so a client who
+  // lands on this form by mistake would otherwise authenticate
+  // successfully, redirect to /dashboard, and get silently bounced back to
+  // a blank /login by requireProfile() — confusing, looks like a broken
+  // login. Detect that case and route to where their account actually is.
+  const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.user.id).maybeSingle();
+  if (!profile) {
+    const { data: client } = await supabase.from('clients').select('id').eq('user_id', data.user.id).maybeSingle();
+    if (client) {
+      redirect('/portal');
+    }
+    await supabase.auth.signOut();
+    return { error: 'No WellDesk dietitian account found for this email. If you\'re a client, use the client portal login instead.' };
   }
 
   redirect('/dashboard');

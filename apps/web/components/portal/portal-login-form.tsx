@@ -72,10 +72,16 @@ export function PortalLoginForm() {
             </div>
             {formError && <p className="text-sm text-destructive">{formError}</p>}
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex-col gap-3">
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? 'Logging in…' : 'Log in'}
             </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              Are you a dietitian?{' '}
+              <Link href="/login" prefetch={false} className="font-medium text-primary hover:underline">
+                Log in here
+              </Link>
+            </p>
           </CardFooter>
         </form>
       </Form>

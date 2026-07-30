@@ -76,6 +76,12 @@ export function LoginForm() {
               Sign Up now
             </Link>
           </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Are you a client?{' '}
+            <Link href="/portal/login" prefetch={false} className="font-medium text-[#A3B73A] hover:underline">
+              Log in to your client portal
+            </Link>
+          </p>
         </form>
       </Form>
     </div>
