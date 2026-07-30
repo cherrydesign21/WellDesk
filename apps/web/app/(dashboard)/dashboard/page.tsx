@@ -87,8 +87,33 @@ function StatCard({
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const result = await getCurrentProfile(supabase);
-  if (!result) return null;
+
+  // Six independent reads — none actually depend on each other's results
+  // (RLS scopes every query to the session's practice_id on its own), so
+  // running them one after another was paying for five extra network round
+  // trips for nothing. Fetching in parallel bounds the wait to the slowest
+  // single query instead of the sum of all of them.
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString().slice(0, 10);
+
+  const [profileResult, { data: clientsRaw }, { data: metricsRaw }, { data: revenueRows }, { data: overdueRows }, { data: upcomingAppointments }] =
+    await Promise.all([
+      getCurrentProfile(supabase),
+      supabase
+        .from('clients')
+        .select('id, full_name, status, photo_url, created_at, enrollments(plan_type, expiry_date, status, cycle_number)'),
+      supabase.from('health_metrics').select('client_id, recorded_at, weight_kg').order('recorded_at', { ascending: false }),
+      supabase.from('payments').select('amount, payment_date').gte('payment_date', sixMonthsAgo),
+      supabase.from('v_enrollment_payment_status').select('client_id, amount_due').eq('payment_status', 'overdue'),
+      supabase
+        .from('appointments')
+        .select('id, client_id, starts_at, notes, mode, clients(full_name)')
+        .eq('status', 'scheduled')
+        .order('starts_at', { ascending: true }),
+    ]);
+
+  if (!profileResult) return null;
+  const result = profileResult;
 
   const firstName = result.profile.full_name.trim().split(/\s+/)[0] ?? '';
   const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
@@ -103,16 +128,7 @@ export default async function DashboardPage() {
     timeZone: timezone,
   }).format(new Date());
 
-  const { data: clientsRaw } = await supabase
-    .from('clients')
-    .select('id, full_name, status, photo_url, created_at, enrollments(plan_type, expiry_date, status, cycle_number)');
-
   const clients = (clientsRaw ?? []) as ClientLite[];
-
-  const { data: metricsRaw } = await supabase
-    .from('health_metrics')
-    .select('client_id, recorded_at, weight_kg')
-    .order('recorded_at', { ascending: false });
 
   const metricsByClient = new Map<string, { recorded_at: string; weight_kg: number | null }[]>();
   for (const m of metricsRaw ?? []) {
@@ -134,14 +150,9 @@ export default async function DashboardPage() {
     return enrollment && enrollment.status === 'active' && enrollment.expiry_date <= in7DaysStr;
   });
 
-  const now = new Date();
   const nowMs = now.getTime();
   const currentMonthKey = now.toISOString().slice(0, 7);
   const newThisMonth = clients.filter((c) => c.created_at?.slice(0, 7) === currentMonthKey).length;
-
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString().slice(0, 10);
-
-  const { data: revenueRows } = await supabase.from('payments').select('amount, payment_date').gte('payment_date', sixMonthsAgo);
 
   const revenueByMonthKey = new Map<string, number>();
   const monthKeys: string[] = [];
@@ -166,20 +177,9 @@ export default async function DashboardPage() {
   const revenueChangePct =
     revenuePrevMonth > 0 ? Math.round(((revenueThisMonth - revenuePrevMonth) / revenuePrevMonth) * 100) : null;
 
-  const { data: overdueRows } = await supabase
-    .from('v_enrollment_payment_status')
-    .select('client_id, amount_due')
-    .eq('payment_status', 'overdue');
-
   const clientNameById = new Map(clients.map((c) => [c.id, c.full_name]));
 
   const todayLocalKey = utcIsoToLocalDateKey(new Date().toISOString(), timezone);
-
-  const { data: upcomingAppointments } = await supabase
-    .from('appointments')
-    .select('id, client_id, starts_at, notes, mode, clients(full_name)')
-    .eq('status', 'scheduled')
-    .order('starts_at', { ascending: true });
 
   type AppointmentJoined = {
     id: string;

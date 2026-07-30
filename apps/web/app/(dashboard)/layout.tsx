@@ -9,12 +9,17 @@ import { NotificationsMenu } from '@/components/dashboard/notifications-menu';
 import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile } = await requireProfile();
+  // requireProfile() and getNotifications() don't depend on each other —
+  // notifications is scoped by RLS off the session cookie directly, not off
+  // the fetched profile row — so running them in parallel instead of one
+  // after the other cuts a full network round-trip off every dashboard load.
+  const supabase = await createClient();
+  const [{ user, profile }, notifications] = await Promise.all([
+    requireProfile(),
+    getNotifications(supabase),
+  ]);
   const practiceName = profile.practices?.name ?? 'WellDesk';
   const logoUrl = profile.practices?.logo_url as string | null | undefined;
-
-  const supabase = await createClient();
-  const notifications = await getNotifications(supabase);
 
   return (
     <div className="app-theme flex h-svh w-full bg-background">
