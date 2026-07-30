@@ -60,7 +60,7 @@ export function LoginForm() {
               )}
             />
             <div className="mt-2 text-right">
-              <Link href="/forgot-password" className="text-sm text-[#A3B73A] hover:underline">
+              <Link href="/forgot-password" prefetch={false} className="text-sm text-[#A3B73A] hover:underline">
                 Forgot Password
               </Link>
             </div>

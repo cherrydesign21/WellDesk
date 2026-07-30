@@ -65,7 +65,7 @@ export function PortalLoginForm() {
                 )}
               />
               <div className="mt-2 text-right">
-                <Link href="/portal/forgot-password" className="text-sm text-primary hover:underline">
+                <Link href="/portal/forgot-password" prefetch={false} className="text-sm text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
