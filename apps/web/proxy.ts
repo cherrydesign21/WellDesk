@@ -10,6 +10,8 @@ const PUBLIC_PATHS = [
   '/portal/forgot-password',
   '/privacy',
   '/terms',
+  '/contact',
+  '/suggestions',
 ];
 
 export async function proxy(request: NextRequest) {
