@@ -9,3 +9,4 @@ export * from './schemas/payment';
 export * from './schemas/appointment';
 export * from './schemas/message';
 export * from './schemas/marketing';
+export * from './schemas/razorpay';

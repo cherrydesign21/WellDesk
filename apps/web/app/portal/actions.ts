@@ -3,11 +3,14 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentClient } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/site';
 import { notifyPractice, getClientNotifications, markNotificationsRead } from '@/lib/notifications-store';
 import { getThreadMessages, sendMessageAsClient, markThreadRead } from '@/lib/messages-store';
 import { getProgressPhotos } from '@/lib/progress-photos-store';
+import { createRazorpayOrder, fetchRazorpayOrder, verifyRazorpaySignature } from '@/lib/razorpay';
+import { getPortalPaymentDue } from '@/lib/portal-payments';
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -330,6 +333,150 @@ export async function sendClientMessage(values: MessageInput) {
 
   revalidatePath('/portal/messages');
   return { success: true };
+}
+
+// Reads/writes here go through the admin client (already scoped to the
+// session's own client.id at every step) rather than the RLS-bound session
+// client — v_enrollment_payment_status's RLS behavior as a *view* depends on
+// its owner's privileges, not necessarily the querying client, so relying on
+// it here would be an unverified assumption. The admin client sidesteps that
+// ambiguity entirely while every query below still filters by client.id.
+export async function createPortalPaymentOrder() {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+  const { client } = result;
+  const admin = createAdminClient();
+
+  const due = await getPortalPaymentDue(client.id, client.practice_id);
+  if (!due.isGatewayConnected) {
+    return { error: "Online payments aren't set up yet — contact your dietitian." };
+  }
+  if (!due.enrollmentId) {
+    return { error: 'No active plan found.' };
+  }
+  if (due.amountDue <= 0) {
+    return { error: 'No payment due right now.' };
+  }
+
+  const { data: gateway } = await admin
+    .from('practices')
+    .select('razorpay_key_id, razorpay_key_secret')
+    .eq('id', client.practice_id)
+    .maybeSingle();
+
+  if (!gateway?.razorpay_key_id || !gateway?.razorpay_key_secret) {
+    return { error: "Online payments aren't set up yet — contact your dietitian." };
+  }
+
+  const { order, error } = await createRazorpayOrder({
+    keyId: gateway.razorpay_key_id,
+    keySecret: gateway.razorpay_key_secret,
+    amountInMajorUnits: due.amountDue,
+    currency: due.currency,
+    receipt: `enr_${due.enrollmentId}_${Date.now()}`,
+    notes: { clientId: client.id, enrollmentId: due.enrollmentId, practiceId: client.practice_id },
+  });
+
+  if (error || !order) {
+    return { error: error ?? 'Could not start the payment.' };
+  }
+
+  return {
+    success: true as const,
+    orderId: order.id,
+    amount: order.amount,
+    currency: order.currency,
+    keyId: gateway.razorpay_key_id,
+    practiceName: client.practices?.name ?? 'Your dietitian',
+    clientName: client.full_name,
+    clientEmail: client.email ?? undefined,
+  };
+}
+
+export async function verifyPortalPayment(params: { orderId: string; paymentId: string; signature: string }) {
+  const supabase = await createClient();
+  const result = await getCurrentClient(supabase);
+  if (!result) {
+    return { error: 'Your session has expired — please log in again.' };
+  }
+  const { client } = result;
+  const admin = createAdminClient();
+
+  // Checkout's success handler can fire more than once (e.g. a refreshed
+  // confirmation tab) — treat a repeat call for an already-recorded order as
+  // a success rather than inserting a duplicate payment.
+  const { data: existing } = await admin
+    .from('payments')
+    .select('id')
+    .eq('razorpay_order_id', params.orderId)
+    .maybeSingle();
+  if (existing) {
+    return { success: true as const };
+  }
+
+  const { data: gateway } = await admin
+    .from('practices')
+    .select('razorpay_key_id, razorpay_key_secret')
+    .eq('id', client.practice_id)
+    .maybeSingle();
+
+  if (!gateway?.razorpay_key_id || !gateway?.razorpay_key_secret) {
+    return { error: 'Online payments are not set up.' };
+  }
+
+  const isValid = verifyRazorpaySignature({
+    orderId: params.orderId,
+    paymentId: params.paymentId,
+    signature: params.signature,
+    keySecret: gateway.razorpay_key_secret,
+  });
+  if (!isValid) {
+    return { error: 'Payment could not be verified.' };
+  }
+
+  // Fetched fresh from Razorpay rather than trusted from the client — the
+  // signature only proves order/payment IDs are genuine, not that the
+  // browser didn't also send a tampered amount alongside them.
+  const order = await fetchRazorpayOrder({
+    keyId: gateway.razorpay_key_id,
+    keySecret: gateway.razorpay_key_secret,
+    orderId: params.orderId,
+  });
+
+  if (!order || order.notes.clientId !== client.id) {
+    return { error: 'Payment could not be verified.' };
+  }
+
+  const { error } = await admin.from('payments').insert({
+    practice_id: client.practice_id,
+    client_id: client.id,
+    enrollment_id: order.notes.enrollmentId,
+    amount: order.amount / 100,
+    payment_date: new Date().toISOString().slice(0, 10),
+    mode: 'online',
+    reference_no: params.paymentId,
+    notes: 'Paid online via Razorpay',
+    razorpay_order_id: params.orderId,
+    razorpay_payment_id: params.paymentId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  await notifyPractice({
+    practiceId: client.practice_id,
+    type: 'payment_received',
+    title: `${client.full_name} paid online`,
+    body: `${order.currency} ${(order.amount / 100).toFixed(2)}`,
+    href: `/clients/${client.id}`,
+  });
+
+  revalidatePath('/portal');
+  return { success: true as const };
 }
 
 export async function fetchMyProgressPhotos() {

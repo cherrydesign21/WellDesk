@@ -7,6 +7,8 @@ import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
 import { PortalRequestAppointmentDialog } from '@/components/portal/portal-request-appointment-dialog';
+import { PortalPayNowCard } from '@/components/portal/portal-pay-now-card';
+import { getPortalPaymentDue } from '@/lib/portal-payments';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,6 +57,8 @@ export default async function PortalPage() {
     .select('id, amount, payment_date, mode, reference_no')
     .eq('client_id', client.id)
     .order('payment_date', { ascending: false });
+
+  const paymentDue = await getPortalPaymentDue(client.id, client.practice_id);
 
   const timezone = client.practices?.timezone ?? 'Asia/Kolkata';
   const { data: appointments } = await supabase
@@ -167,6 +171,10 @@ export default async function PortalPage() {
           </Card>
         )}
       </div>
+
+      {paymentDue.isGatewayConnected && paymentDue.amountDue > 0 && (
+        <PortalPayNowCard amountDue={paymentDue.amountDue} currency={paymentDue.currency} />
+      )}
 
       <div>
         <h2 className="mb-3 text-lg font-medium">Payment Receipts</h2>

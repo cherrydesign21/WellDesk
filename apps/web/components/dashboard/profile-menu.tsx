@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Settings, Palette, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Settings, Palette, CreditCard, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
 import { logout } from '@/app/(auth)/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,6 +52,10 @@ export function ProfileMenu({
         <DropdownMenuItem render={<Link href="/settings/branding" />}>
           <Palette className="h-4 w-4" />
           Brand Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/settings/payments" />}>
+          <CreditCard className="h-4 w-4" />
+          Payment Settings
         </DropdownMenuItem>
         {isSuperAdmin && (
           <DropdownMenuItem render={<Link href="/admin" />}>
