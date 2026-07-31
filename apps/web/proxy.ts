@@ -48,11 +48,16 @@ export async function proxy(request: NextRequest) {
   // this proxy only ever redirects unauthenticated visitors *toward* the
   // correct login page, never away from one, so it can't loop against a
   // page-level redirect the other direction.
+  // API routes authenticate themselves (session check, or a bearer secret
+  // for cron routes) and return a proper JSON error — redirecting an API
+  // caller to an HTML login page instead of a 401 is wrong for all of them,
+  // not just cron, and it's what was silently breaking the cron endpoint.
   const isPublicPath =
     PUBLIC_PATHS.includes(pathname) ||
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/share/') ||
-    pathname.startsWith('/portal/auth/');
+    pathname.startsWith('/portal/auth/') ||
+    pathname.startsWith('/api/');
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
