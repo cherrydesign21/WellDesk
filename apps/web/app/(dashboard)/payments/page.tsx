@@ -1,4 +1,5 @@
 import { Wallet } from 'lucide-react';
+import { formatCurrency } from '@welldesk/shared';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,8 @@ export default async function PaymentsPage({
   const result = await getCurrentProfile(supabase);
   if (!result) return null;
 
+  const currency = result.profile.practices?.currency ?? 'INR';
+
   let query = supabase
     .from('payments')
     .select('id, amount, payment_date, mode, reference_no, notes, clients(full_name)')
@@ -34,7 +37,7 @@ export default async function PaymentsPage({
   const exportRows = (payments ?? []).map((p) => [
     p.payment_date,
     (p.clients as unknown as { full_name: string } | null)?.full_name ?? '—',
-    p.amount,
+    formatCurrency(p.amount, currency),
     p.mode,
     p.reference_no ?? '—',
   ]);
@@ -44,7 +47,9 @@ export default async function PaymentsPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Payments</h1>
-          <p className="text-sm text-muted-foreground">{payments?.length ?? 0} payment(s) · total {total}</p>
+          <p className="text-sm text-muted-foreground">
+            {payments?.length ?? 0} payment(s) · total {formatCurrency(total, currency)}
+          </p>
         </div>
         <ExportMenu
           filenameBase="payments"
@@ -96,7 +101,7 @@ export default async function PaymentsPage({
               <TableRow key={p.id}>
                 <TableCell className="whitespace-nowrap">{p.payment_date}</TableCell>
                 <TableCell>{(p.clients as unknown as { full_name: string } | null)?.full_name ?? '—'}</TableCell>
-                <TableCell>{p.amount}</TableCell>
+                <TableCell>{formatCurrency(p.amount, currency)}</TableCell>
                 <TableCell className="capitalize">{p.mode}</TableCell>
                 <TableCell>{p.reference_no ?? '—'}</TableCell>
               </TableRow>

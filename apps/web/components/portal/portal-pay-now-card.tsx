@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { toast } from 'sonner';
 import { CreditCard } from 'lucide-react';
+import { formatCurrency } from '@welldesk/shared';
 import { createPortalPaymentOrder, verifyPortalPayment } from '@/app/portal/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -82,9 +83,7 @@ export function PortalPayNowCard({ amountDue, currency }: { amountDue: number; c
               <CreditCard className="h-6 w-6" />
             </div>
             <div>
-              <p className="font-medium">
-                {currency} {amountDue.toFixed(2)} due
-              </p>
+              <p className="font-medium">{formatCurrency(amountDue, currency)} due</p>
               <p className="text-sm text-muted-foreground">Pay securely online with Razorpay.</p>
             </div>
           </div>

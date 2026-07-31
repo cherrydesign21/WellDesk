@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Building2, Users, Stethoscope, Wallet, type LucideIcon } from 'lucide-react';
+import { formatCurrency, getCurrencySymbol } from '@welldesk/shared';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +23,7 @@ function StatCard({
   tone,
   prefix,
   badge,
+  note,
 }: {
   label: string;
   value: number;
@@ -29,6 +31,7 @@ function StatCard({
   tone: keyof typeof STAT_ICON_CLASSES;
   prefix?: string;
   badge?: string;
+  note?: string;
 }) {
   return (
     <Card>
@@ -42,6 +45,7 @@ function StatCard({
             <AnimatedCounter value={value} />
           </p>
           <p className="text-xs text-muted-foreground">{label}</p>
+          {note && <p className="mt-0.5 text-[11px] text-muted-foreground/80">{note}</p>}
         </div>
         {badge && (
           <Badge variant="success" className="shrink-0">
@@ -57,7 +61,7 @@ export default async function AdminPracticesPage() {
   const supabase = createAdminClient();
 
   const [{ data: practices }, { data: clients }, { data: owners }, { data: payments }] = await Promise.all([
-    supabase.from('practices').select('id, name, tagline, owner_user_id, suspended_at, created_at').order('created_at', { ascending: false }),
+    supabase.from('practices').select('id, name, tagline, owner_user_id, currency, suspended_at, created_at').order('created_at', { ascending: false }),
     supabase.from('clients').select('practice_id'),
     supabase.from('profiles').select('id, full_name, practice_id').eq('role', 'owner'),
     supabase.from('payments').select('practice_id, amount, payment_date'),
@@ -69,11 +73,30 @@ export default async function AdminPracticesPage() {
   }
 
   const ownerByPractice = new Map(owners?.map((o) => [o.practice_id, o.full_name]));
+  const currencyByPractice = new Map((practices ?? []).map((p) => [p.id, p.currency ?? 'INR']));
 
   const revenueByPractice = new Map<string, number>();
   for (const p of payments ?? []) {
     revenueByPractice.set(p.practice_id, (revenueByPractice.get(p.practice_id) ?? 0) + Number(p.amount));
   }
+
+  // Practices can each bill in a different currency, so a single summed
+  // "Platform Revenue" number would silently add e.g. INR and USD together.
+  // Instead, sum per-currency and headline whichever currency has the
+  // largest total — with everything else called out in a caveat rather than
+  // folded into a misleading number. The per-practice table below always
+  // shows each row in its own currency, so it's never ambiguous there.
+  const revenueByCurrency = new Map<string, number>();
+  for (const p of payments ?? []) {
+    const cur = currencyByPractice.get(p.practice_id) ?? 'INR';
+    revenueByCurrency.set(cur, (revenueByCurrency.get(cur) ?? 0) + Number(p.amount));
+  }
+  const currenciesInUse = [...revenueByCurrency.keys()];
+  const dominantCurrency = currenciesInUse.reduce(
+    (best, cur) => (!best || (revenueByCurrency.get(cur) ?? 0) > (revenueByCurrency.get(best) ?? 0) ? cur : best),
+    currenciesInUse[0] ?? 'INR'
+  );
+  const otherCurrencies = currenciesInUse.filter((c) => c !== dominantCurrency);
 
   // Stats
   const totalPractices = practices?.length ?? 0;
@@ -81,7 +104,7 @@ export default async function AdminPracticesPage() {
   const suspendedPractices = totalPractices - activePractices;
   const totalDietitians = owners?.length ?? 0;
   const totalClients = clients?.length ?? 0;
-  const totalRevenue = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalRevenue = revenueByCurrency.get(dominantCurrency) ?? 0;
 
   const now = new Date();
   const currentMonthKey = now.toISOString().slice(0, 7);
@@ -97,8 +120,12 @@ export default async function AdminPracticesPage() {
     monthLabels.set(key, d.toLocaleString('en-US', { month: 'short' }));
   }
 
+  // Trend chart is scoped to the dominant currency only, for the same
+  // reason the headline stat is — summing different currencies month over
+  // month would be just as misleading.
   const revenueByMonth = new Map<string, number>(monthKeys.map((k) => [k, 0]));
   for (const p of payments ?? []) {
+    if ((currencyByPractice.get(p.practice_id) ?? 'INR') !== dominantCurrency) continue;
     const key = p.payment_date.slice(0, 7);
     if (revenueByMonth.has(key)) revenueByMonth.set(key, (revenueByMonth.get(key) ?? 0) + Number(p.amount));
   }
@@ -133,10 +160,22 @@ export default async function AdminPracticesPage() {
         />
         <StatCard label="Dietitians" value={totalDietitians} icon={Stethoscope} tone="info" />
         <StatCard label="Clients" value={totalClients} icon={Users} tone="success" />
-        <StatCard label="Platform Revenue" value={totalRevenue} icon={Wallet} tone="warning" prefix="₹" />
+        <StatCard
+          label="Platform Revenue"
+          value={totalRevenue}
+          icon={Wallet}
+          tone="warning"
+          prefix={getCurrencySymbol(dominantCurrency)}
+          note={otherCurrencies.length > 0 ? `+ revenue in ${otherCurrencies.join(', ')} not included` : undefined}
+        />
       </div>
 
-      <AdminDashboardCharts revenueTrend={revenueTrend} signupTrend={signupTrend} statusBreakdown={statusBreakdown} />
+      <AdminDashboardCharts
+        revenueTrend={revenueTrend}
+        signupTrend={signupTrend}
+        statusBreakdown={statusBreakdown}
+        currency={dominantCurrency}
+      />
 
       <div className="rounded-md border">
         <Table>
@@ -167,7 +206,7 @@ export default async function AdminPracticesPage() {
                 </TableCell>
                 <TableCell>{ownerByPractice.get(p.id) ?? '—'}</TableCell>
                 <TableCell>{countByPractice.get(p.id) ?? 0}</TableCell>
-                <TableCell>₹{(revenueByPractice.get(p.id) ?? 0).toLocaleString('en-IN')}</TableCell>
+                <TableCell>{formatCurrency(revenueByPractice.get(p.id) ?? 0, currencyByPractice.get(p.id) ?? 'INR')}</TableCell>
                 <TableCell className="whitespace-nowrap">{p.created_at.slice(0, 10)}</TableCell>
                 <TableCell>
                   {p.suspended_at ? (

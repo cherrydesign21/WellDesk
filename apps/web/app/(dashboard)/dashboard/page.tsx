@@ -5,6 +5,8 @@ import {
   getEffectiveClientStatus,
   utcIsoToLocalDateKey,
   utcIsoToLocalTime,
+  formatCurrency,
+  getCurrencySymbol,
   PLAN_TYPE_LABELS,
   type ClientStatus,
   type AppointmentMode,
@@ -117,6 +119,7 @@ export default async function DashboardPage() {
 
   const firstName = result.profile.full_name.trim().split(/\s+/)[0] ?? '';
   const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
+  const currency = result.profile.practices?.currency ?? 'INR';
 
   const nowLocalHour = Number(
     new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: timezone }).format(new Date())
@@ -227,7 +230,7 @@ export default async function DashboardPage() {
       id: `overdue-${row.client_id}`,
       clientId: row.client_id,
       clientName: clientNameById.get(row.client_id) ?? 'Unknown',
-      reason: `Payment of ₹${Number(row.amount_due).toLocaleString('en-IN')} overdue`,
+      reason: `Payment of ${formatCurrency(row.amount_due, currency)} overdue`,
       kind: 'overdue',
     });
   }
@@ -343,7 +346,7 @@ export default async function DashboardPage() {
           value={revenueThisMonth}
           icon={Wallet}
           tone="success"
-          prefix="₹"
+          prefix={getCurrencySymbol(currency)}
           badge={revenueChangePct !== null ? `${revenueChangePct >= 0 ? '+' : ''}${revenueChangePct}%` : undefined}
           badgeTone={revenueChangePct !== null && revenueChangePct < 0 ? 'destructive' : 'success'}
         />
@@ -362,7 +365,12 @@ export default async function DashboardPage() {
         clients={clients.map((c) => ({ id: c.id, full_name: c.full_name }))}
       />
 
-      <DashboardCharts revenueTrend={revenueTrend} statusBreakdown={statusBreakdown} adherenceBreakdown={adherenceBreakdown} />
+      <DashboardCharts
+        revenueTrend={revenueTrend}
+        statusBreakdown={statusBreakdown}
+        adherenceBreakdown={adherenceBreakdown}
+        currency={currency}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <TodaysSchedule items={todaysAppointments} />

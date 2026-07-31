@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight, Mail, Phone, Activity } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
-import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime } from '@welldesk/shared';
+import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime, formatCurrency } from '@welldesk/shared';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
@@ -200,7 +200,7 @@ export default async function PortalPage() {
                 {payments?.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>{p.payment_date}</TableCell>
-                    <TableCell>{p.amount}</TableCell>
+                    <TableCell>{formatCurrency(p.amount, paymentDue.currency)}</TableCell>
                     <TableCell className="capitalize">{p.mode}</TableCell>
                     <TableCell>{p.reference_no ?? '—'}</TableCell>
                   </TableRow>

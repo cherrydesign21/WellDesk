@@ -25,6 +25,37 @@ export type Gender = (typeof GENDERS)[number];
 export const PAYMENT_MODES = ['cash', 'upi', 'card', 'online', 'other'] as const;
 export type PaymentMode = (typeof PAYMENT_MODES)[number];
 
+export const CURRENCY_CODES = ['INR', 'USD', 'GBP', 'AUD', 'CAD', 'NZD', 'NGN', 'RUB'] as const;
+export type CurrencyCode = (typeof CURRENCY_CODES)[number];
+
+export const CURRENCIES: { code: CurrencyCode; label: string; symbol: string }[] = [
+  { code: 'INR', label: 'Indian Rupee', symbol: '₹' },
+  { code: 'USD', label: 'US Dollar', symbol: '$' },
+  { code: 'GBP', label: 'British Pound', symbol: '£' },
+  { code: 'AUD', label: 'Australian Dollar', symbol: 'A$' },
+  { code: 'CAD', label: 'Canadian Dollar', symbol: 'C$' },
+  { code: 'NZD', label: 'New Zealand Dollar', symbol: 'NZ$' },
+  { code: 'NGN', label: 'Nigerian Naira', symbol: '₦' },
+  { code: 'RUB', label: 'Russian Ruble', symbol: '₽' },
+];
+
+export function getCurrencySymbol(code: string): string {
+  return CURRENCIES.find((c) => c.code === code)?.symbol ?? code;
+}
+
+// A curated symbol (₹, A$, NZ$…) prefixed onto a fixed-decimal amount —
+// deliberately not delegated to Intl's currency formatter, since ICU's
+// symbol choice for a code like AUD/NZD varies by runtime and we want the
+// exact symbols in CURRENCIES everywhere, independent of the server's locale
+// data.
+export function formatCurrency(amount: number | string | null | undefined, code: string): string {
+  const value = Number(amount) || 0;
+  const formatted = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+    value
+  );
+  return `${getCurrencySymbol(code)}${formatted}`;
+}
+
 export const DEFAULT_MEAL_SLOTS = [
   'Breakfast',
   'Mid-Morning',

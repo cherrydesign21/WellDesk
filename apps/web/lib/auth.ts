@@ -12,7 +12,7 @@ export async function getCurrentProfile(supabase: SupabaseClient) {
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'id, full_name, phone, role, avatar_url, practice_id, is_super_admin, practices(name, tagline, logo_url, primary_color, font_choice, timezone, suspended_at)'
+      'id, full_name, phone, role, avatar_url, practice_id, is_super_admin, practices(name, tagline, logo_url, primary_color, font_choice, timezone, currency, suspended_at)'
     )
     .eq('id', user.id)
     .single();
@@ -56,7 +56,7 @@ export async function getCurrentClient(supabase: SupabaseClient) {
   const { data: client } = await supabase
     .from('clients')
     .select(
-      'id, full_name, email, phone, photo_url, practice_id, practices(name, tagline, logo_url, primary_color, timezone)'
+      'id, full_name, email, phone, photo_url, practice_id, practices(name, tagline, logo_url, primary_color, timezone, currency)'
     )
     .eq('user_id', user.id)
     .single();

@@ -1,3 +1,4 @@
+import { formatCurrency } from '@welldesk/shared';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -15,7 +16,7 @@ export default async function AdminDietitiansPage() {
 
   const { data: practices } = await supabase
     .from('practices')
-    .select('id, name, suspended_at');
+    .select('id, name, currency, suspended_at');
   const practiceById = new Map((practices ?? []).map((p) => [p.id, p]));
 
   const { data: clients } = await supabase.from('clients').select('practice_id');
@@ -52,6 +53,7 @@ export default async function AdminDietitiansPage() {
       gender: p.gender,
       totalClients: clientCountByPractice.get(p.practice_id) ?? 0,
       totalRevenue: revenueByPractice.get(p.practice_id) ?? 0,
+      currency: practice?.currency ?? 'INR',
       joinedAt: p.created_at,
       isSuspended: !!practice?.suspended_at,
     };
@@ -96,7 +98,7 @@ export default async function AdminDietitiansPage() {
                 </TableCell>
                 <TableCell className="capitalize">{row.gender ?? '—'}</TableCell>
                 <TableCell>{row.totalClients}</TableCell>
-                <TableCell>₹{row.totalRevenue.toLocaleString('en-IN')}</TableCell>
+                <TableCell>{formatCurrency(row.totalRevenue, row.currency)}</TableCell>
                 <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                   {row.joinedAt.slice(0, 10)}
                 </TableCell>

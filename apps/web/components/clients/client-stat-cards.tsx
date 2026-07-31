@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Heart, Scale, Wallet, CalendarClock, ArrowDown, ArrowUp } from 'lucide-react';
-import { healthScoreLabel } from '@welldesk/shared';
+import { healthScoreLabel, formatCurrency } from '@welldesk/shared';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -139,9 +139,11 @@ export function CurrentWeightCard({
 export function PaymentStatCard({
   summary,
   renewsOn,
+  currency,
 }: {
   summary: { plan_amount: number; amount_paid: number; amount_due: number; payment_status: string } | null;
   renewsOn: string | null;
+  currency: string;
 }) {
   if (!summary) {
     return (
@@ -178,8 +180,8 @@ export function PaymentStatCard({
           </Badge>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Payments</p>
-        <p className="text-2xl font-semibold">₹{summary.amount_paid.toLocaleString('en-IN')}</p>
-        <p className="text-xs text-muted-foreground">Plan: ₹{summary.plan_amount.toLocaleString('en-IN')}</p>
+        <p className="text-2xl font-semibold">{formatCurrency(summary.amount_paid, currency)}</p>
+        <p className="text-xs text-muted-foreground">Plan: {formatCurrency(summary.plan_amount, currency)}</p>
         {renewsOn && <p className="text-xs text-muted-foreground">Renews on {renewsOn}</p>}
       </CardContent>
     </Card>

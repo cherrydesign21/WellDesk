@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { calculateBmi, getEffectiveEnrollmentStatus } from '@welldesk/shared';
+import { calculateBmi, getEffectiveEnrollmentStatus, formatCurrency } from '@welldesk/shared';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -31,6 +31,9 @@ export default async function AdminClientDetailPage({
 }) {
   const { practiceId, clientId } = await params;
   const supabase = createAdminClient();
+
+  const { data: practice } = await supabase.from('practices').select('currency').eq('id', practiceId).maybeSingle();
+  const currency = practice?.currency ?? 'INR';
 
   const { data: client } = await supabase
     .from('clients')
@@ -127,7 +130,7 @@ export default async function AdminClientDetailPage({
                   <TableCell className="whitespace-nowrap">
                     {e.start_date} → {e.expiry_date}
                   </TableCell>
-                  <TableCell>{e.plan_amount}</TableCell>
+                  <TableCell>{formatCurrency(e.plan_amount, currency)}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(getEffectiveEnrollmentStatus(e))} className="capitalize">
                       {getEffectiveEnrollmentStatus(e)}
@@ -168,7 +171,7 @@ export default async function AdminClientDetailPage({
           <Card className="mb-3">
             <CardContent className="py-3 text-sm">
               <span className="text-muted-foreground">Total paid: </span>
-              <span className="font-semibold">{totalPaid}</span>
+              <span className="font-semibold">{formatCurrency(totalPaid, currency)}</span>
             </CardContent>
           </Card>
           <div className="rounded-md border">
@@ -184,7 +187,7 @@ export default async function AdminClientDetailPage({
                 {(payments ?? []).map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="whitespace-nowrap">{p.payment_date}</TableCell>
-                    <TableCell>{p.amount}</TableCell>
+                    <TableCell>{formatCurrency(p.amount, currency)}</TableCell>
                     <TableCell className="capitalize">{p.mode}</TableCell>
                   </TableRow>
                 ))}

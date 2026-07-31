@@ -3,6 +3,7 @@
 import { useTransition } from 'react';
 import { Trash2, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatCurrency } from '@welldesk/shared';
 import { deletePayment } from '@/app/(dashboard)/clients/[clientId]/payments/actions';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -23,10 +24,12 @@ export function PaymentsHistoryTable({
   clientId,
   rows,
   showReference = true,
+  currency,
 }: {
   clientId: string;
   rows: PaymentRow[];
   showReference?: boolean;
+  currency: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -63,7 +66,7 @@ export function PaymentsHistoryTable({
           {sorted.map((row) => (
             <TableRow key={row.id}>
               <TableCell className="whitespace-nowrap">{row.payment_date}</TableCell>
-              <TableCell>{row.amount}</TableCell>
+              <TableCell>{formatCurrency(row.amount, currency)}</TableCell>
               <TableCell className="capitalize">{row.mode}</TableCell>
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {row.plan_start && row.plan_end ? `${row.plan_start} → ${row.plan_end}` : '—'}

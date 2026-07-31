@@ -1,6 +1,7 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { formatCurrency } from '@welldesk/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type TrendPoint = { month: string; value: number };
@@ -10,14 +11,21 @@ export function AdminDashboardCharts({
   revenueTrend,
   signupTrend,
   statusBreakdown,
+  currency,
 }: {
   revenueTrend: TrendPoint[];
   signupTrend: TrendPoint[];
   statusBreakdown: Slice[];
+  currency: string;
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <TrendCard title="Platform Revenue" data={revenueTrend} color="var(--chart-1)" formatValue={(v) => `₹${v.toLocaleString('en-IN')}`} />
+      <TrendCard
+        title="Platform Revenue"
+        data={revenueTrend}
+        color="var(--chart-1)"
+        formatValue={(v) => formatCurrency(v, currency)}
+      />
       <TrendCard title="New Practices" data={signupTrend} color="var(--chart-2)" formatValue={(v) => String(v)} />
       <DonutCard title="Practice Status" data={statusBreakdown} />
     </div>

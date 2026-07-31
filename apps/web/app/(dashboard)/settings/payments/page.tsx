@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { PaymentSettingsForm } from '@/components/settings/payment-settings-form';
+import { CurrencySettingsForm } from '@/components/settings/currency-settings-form';
 
 export default async function PaymentSettingsPage() {
   const supabase = await createClient();
@@ -25,6 +26,9 @@ export default async function PaymentSettingsPage() {
           Connect your own Razorpay account so clients can pay online from their portal — money goes straight to
           your bank, WellDesk never holds or forwards it.
         </p>
+      </div>
+      <div className="max-w-xl space-y-6">
+        <CurrencySettingsForm currency={gateway?.currency ?? 'INR'} />
       </div>
       <PaymentSettingsForm
         isConnected={Boolean(gateway?.razorpay_key_id && gateway?.razorpay_key_secret)}

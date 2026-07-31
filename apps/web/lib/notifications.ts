@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { formatCurrency } from '@welldesk/shared';
 
 export type NotificationItem = {
   id: string;
@@ -16,7 +17,10 @@ export async function getNotifications(supabase: SupabaseClient): Promise<Notifi
   in7Days.setDate(in7Days.getDate() + 7);
   const in7DaysStr = in7Days.toISOString().slice(0, 10);
 
-  const [{ data: expiring }, { data: overdue }] = await Promise.all([
+  // practices_select's RLS policy already scopes a bare select to exactly
+  // the caller's own practice row (id = current_practice_id()), so no
+  // explicit .eq() filter is needed here.
+  const [{ data: expiring }, { data: overdue }, { data: practice }] = await Promise.all([
     supabase
       .from('enrollments')
       .select('client_id, expiry_date')
@@ -29,7 +33,9 @@ export async function getNotifications(supabase: SupabaseClient): Promise<Notifi
       .select('client_id, amount_due')
       .eq('payment_status', 'overdue')
       .limit(5),
+    supabase.from('practices').select('currency').maybeSingle(),
   ]);
+  const currency = practice?.currency ?? 'INR';
 
   const expiringRows = (expiring ?? []) as { client_id: string; expiry_date: string }[];
   const overdueRows = (overdue ?? []) as { client_id: string; amount_due: number }[];
@@ -58,7 +64,7 @@ export async function getNotifications(supabase: SupabaseClient): Promise<Notifi
       id: `overdue-${row.client_id}`,
       clientId: row.client_id,
       label: nameById.get(row.client_id) ?? 'Unknown',
-      sub: `Payment of ${row.amount_due} overdue`,
+      sub: `Payment of ${formatCurrency(row.amount_due, currency)} overdue`,
       href: `/clients/${row.client_id}`,
     });
   }

@@ -9,6 +9,7 @@ import {
   getEffectiveClientStatus,
   utcIsoToLocalDateKey,
   utcIsoToLocalTime,
+  formatCurrency,
 } from '@welldesk/shared';
 import { ExportMenu } from '@/components/ui/export-menu';
 import { LogMetricDialog } from '@/components/metrics/log-metric-dialog';
@@ -156,6 +157,7 @@ export default async function ClientDetailPage({
     healthScore !== null && previousHealthScore !== null ? healthScore - previousHealthScore : null;
 
   const timezone = result.profile.practices?.timezone ?? 'Asia/Kolkata';
+  const currency = result.profile.practices?.currency ?? 'INR';
   const { data: appointments } = await supabase
     .from('appointments')
     .select('id, client_id, starts_at, status, notes, mode')
@@ -230,6 +232,7 @@ export default async function ClientDetailPage({
         />
         <PaymentStatCard
           summary={paymentSummary}
+          currency={currency}
           renewsOn={
             latestEnrollment
               ? new Date(latestEnrollment.expiry_date).toLocaleDateString(undefined, {
@@ -293,7 +296,7 @@ export default async function ClientDetailPage({
                 headers={PAYMENT_EXPORT_HEADERS}
                 rows={(paymentRows ?? []).map((p) => [
                   p.payment_date,
-                  p.amount,
+                  formatCurrency(p.amount, currency),
                   p.mode,
                   p.reference_no ?? '—',
                   p.plan_start && p.plan_end ? `${p.plan_start} to ${p.plan_end}` : '—',
@@ -302,7 +305,7 @@ export default async function ClientDetailPage({
               <LogPaymentDialog clientId={client.id} />
             </div>
           </div>
-          <PaymentsHistoryTable clientId={client.id} rows={paymentRows} showReference={false} />
+          <PaymentsHistoryTable clientId={client.id} rows={paymentRows} showReference={false} currency={currency} />
         </div>
       </div>
 

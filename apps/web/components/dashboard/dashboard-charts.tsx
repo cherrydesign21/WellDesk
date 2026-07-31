@@ -1,6 +1,7 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { formatCurrency } from '@welldesk/shared';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type TrendPoint = { month: string; amount: number };
@@ -10,10 +11,12 @@ export function DashboardCharts({
   revenueTrend,
   statusBreakdown,
   adherenceBreakdown,
+  currency,
 }: {
   revenueTrend: TrendPoint[];
   statusBreakdown: Slice[];
   adherenceBreakdown: Slice[];
+  currency: string;
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -27,7 +30,7 @@ export function DashboardCharts({
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis fontSize={12} tickLine={false} axisLine={false} width={40} />
-              <Tooltip formatter={(value) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue']} />
+              <Tooltip formatter={(value) => [formatCurrency(Number(value), currency), 'Revenue']} />
               <Bar dataKey="amount" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { formatCurrency } from '@welldesk/shared';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { ExportMenu } from '@/components/ui/export-menu';
@@ -21,6 +22,8 @@ export default async function ClientPaymentsPage({
 
   const { data: client } = await supabase.from('clients').select('id, full_name').eq('id', clientId).single();
   if (!client) notFound();
+
+  const currency = result.profile.practices?.currency ?? 'INR';
 
   const { data: enrollments } = await supabase
     .from('enrollments')
@@ -64,7 +67,7 @@ export default async function ClientPaymentsPage({
             headers={PAYMENT_EXPORT_HEADERS}
             rows={paymentRows.map((p) => [
               p.payment_date,
-              p.amount,
+              formatCurrency(p.amount, currency),
               p.mode,
               p.reference_no ?? '—',
               p.plan_start && p.plan_end ? `${p.plan_start} to ${p.plan_end}` : '—',
@@ -75,7 +78,7 @@ export default async function ClientPaymentsPage({
         </div>
       </div>
 
-      <PaymentsHistoryTable clientId={clientId} rows={paymentRows} />
+      <PaymentsHistoryTable clientId={clientId} rows={paymentRows} currency={currency} />
     </div>
   );
 }
