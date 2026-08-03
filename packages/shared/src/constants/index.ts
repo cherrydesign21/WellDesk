@@ -56,6 +56,31 @@ export function formatCurrency(amount: number | string | null | undefined, code:
   return `${getCurrencySymbol(code)}${formatted}`;
 }
 
+// rates is always relative to ONE fetched base currency (see
+// apps/web/lib/fx-rates.ts, which always fetches base=USD) — e.g.
+// rates.INR is "how many INR per 1 unit of the base". Converting A → B
+// routes through that shared base rather than needing a rate for every
+// pair directly.
+export function convertCurrency(amount: number, from: string, to: string, rates: Record<string, number>): number {
+  if (from === to) return amount;
+  const fromRate = rates[from];
+  const toRate = rates[to];
+  // Missing rate (e.g. a code outside CURRENCIES, or a not-yet-cached
+  // fetch) — show the un-converted number rather than silently zeroing it.
+  if (!fromRate || !toRate) return amount;
+  const amountInBase = amount / fromRate;
+  return amountInBase * toRate;
+}
+
+export function formatMoney(
+  amount: number | string | null | undefined,
+  from: string,
+  to: string,
+  rates: Record<string, number>
+): string {
+  return formatCurrency(convertCurrency(Number(amount) || 0, from, to, rates), to);
+}
+
 export const DEFAULT_MEAL_SLOTS = [
   'Breakfast',
   'Mid-Morning',

@@ -1,5 +1,6 @@
-import { formatCurrency } from '@welldesk/shared';
+import { formatCurrency, convertCurrency } from '@welldesk/shared';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getFxRates } from '@/lib/fx-rates';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,10 +26,13 @@ export default async function AdminDietitiansPage() {
     clientCountByPractice.set(c.practice_id, (clientCountByPractice.get(c.practice_id) ?? 0) + 1);
   }
 
-  const { data: payments } = await supabase.from('payments').select('practice_id, amount');
+  const { data: payments } = await supabase.from('payments').select('practice_id, amount, currency');
+  const rates = await getFxRates();
   const revenueByPractice = new Map<string, number>();
   for (const p of payments ?? []) {
-    revenueByPractice.set(p.practice_id, (revenueByPractice.get(p.practice_id) ?? 0) + Number(p.amount));
+    const practiceCurrency = practiceById.get(p.practice_id)?.currency ?? 'INR';
+    const converted = convertCurrency(Number(p.amount), p.currency, practiceCurrency, rates);
+    revenueByPractice.set(p.practice_id, (revenueByPractice.get(p.practice_id) ?? 0) + converted);
   }
 
   const emailById = new Map<string, string>();

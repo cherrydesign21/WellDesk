@@ -9,8 +9,9 @@ import {
   getEffectiveClientStatus,
   utcIsoToLocalDateKey,
   utcIsoToLocalTime,
-  formatCurrency,
+  formatMoney,
 } from '@welldesk/shared';
+import { getFxRates } from '@/lib/fx-rates';
 import { ExportMenu } from '@/components/ui/export-menu';
 import { LogMetricDialog } from '@/components/metrics/log-metric-dialog';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
@@ -79,7 +80,7 @@ export default async function ClientDetailPage({
 
   const { data: payments } = await supabase
     .from('payments')
-    .select('id, amount, payment_date, mode, reference_no, notes, enrollment_id')
+    .select('id, amount, currency, payment_date, mode, reference_no, notes, enrollment_id')
     .eq('client_id', clientId)
     .order('payment_date', { ascending: false });
 
@@ -98,10 +99,12 @@ export default async function ClientDetailPage({
   const { data: paymentSummary } = latestEnrollment
     ? await supabase
         .from('v_enrollment_payment_status')
-        .select('plan_amount, amount_paid, amount_due, payment_status')
+        .select('plan_amount, amount_paid, amount_due, payment_status, currency')
         .eq('enrollment_id', latestEnrollment.id)
         .single()
     : { data: null };
+
+  const rates = await getFxRates();
 
   const { data: metrics } = await supabase
     .from('health_metrics')
@@ -232,7 +235,8 @@ export default async function ClientDetailPage({
         />
         <PaymentStatCard
           summary={paymentSummary}
-          currency={currency}
+          displayCurrency={currency}
+          rates={rates}
           renewsOn={
             latestEnrollment
               ? new Date(latestEnrollment.expiry_date).toLocaleDateString(undefined, {
@@ -296,7 +300,7 @@ export default async function ClientDetailPage({
                 headers={PAYMENT_EXPORT_HEADERS}
                 rows={(paymentRows ?? []).map((p) => [
                   p.payment_date,
-                  formatCurrency(p.amount, currency),
+                  formatMoney(p.amount, p.currency, currency, rates),
                   p.mode,
                   p.reference_no ?? '—',
                   p.plan_start && p.plan_end ? `${p.plan_start} to ${p.plan_end}` : '—',
@@ -305,7 +309,13 @@ export default async function ClientDetailPage({
               <LogPaymentDialog clientId={client.id} />
             </div>
           </div>
-          <PaymentsHistoryTable clientId={client.id} rows={paymentRows} showReference={false} currency={currency} />
+          <PaymentsHistoryTable
+            clientId={client.id}
+            rows={paymentRows}
+            showReference={false}
+            displayCurrency={currency}
+            rates={rates}
+          />
         </div>
       </div>
 

@@ -1,4 +1,6 @@
+import { convertCurrency } from '@welldesk/shared';
 import { createAdminClient } from './supabase/admin';
+import { getFxRates } from './fx-rates';
 
 export type PaymentDueInfo = {
   isGatewayConnected: boolean;
@@ -41,10 +43,18 @@ export async function getPortalPaymentDue(clientId: string, practiceId: string):
 
   const { data: status } = await admin
     .from('v_enrollment_payment_status')
-    .select('amount_due')
+    .select('amount_due, currency')
     .eq('enrollment_id', enrollment.id)
     .eq('client_id', clientId)
     .maybeSingle();
 
-  return { isGatewayConnected, currency, enrollmentId: enrollment.id, amountDue: status?.amount_due ?? 0 };
+  // The view's amount_due is in the enrollment's own currency, which can
+  // differ from the practice's current display/billing currency if that's
+  // been changed since the enrollment was created — convert to what the
+  // client should actually be charged.
+  const rawAmountDue = status?.amount_due ?? 0;
+  const rates = await getFxRates();
+  const amountDue = convertCurrency(rawAmountDue, status?.currency ?? currency, currency, rates);
+
+  return { isGatewayConnected, currency, enrollmentId: enrollment.id, amountDue };
 }

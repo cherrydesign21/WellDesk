@@ -121,6 +121,7 @@ export async function restartPlan(clientId: string, values: EnrollmentInput) {
     start_date: data.startDate,
     expiry_date: expiryDate,
     plan_amount: data.planAmount,
+    currency: profile.practices?.currency ?? 'INR',
     notes: data.notes || null,
     created_by: profile.id,
   });

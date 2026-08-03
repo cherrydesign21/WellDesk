@@ -11,6 +11,7 @@ import { getThreadMessages, sendMessageAsClient, markThreadRead } from '@/lib/me
 import { getProgressPhotos } from '@/lib/progress-photos-store';
 import { createRazorpayOrder, fetchRazorpayOrder, verifyRazorpaySignature } from '@/lib/razorpay';
 import { getPortalPaymentDue } from '@/lib/portal-payments';
+import { getFxRates } from '@/lib/fx-rates';
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -20,6 +21,7 @@ import {
   appointmentRequestSchema,
   messageSchema,
   zonedTimeToUtcIso,
+  convertCurrency,
   type LoginInput,
   type ForgotPasswordInput,
   type ClientAccountSettingsInput,
@@ -450,11 +452,27 @@ export async function verifyPortalPayment(params: { orderId: string; paymentId: 
     return { error: 'Payment could not be verified.' };
   }
 
+  const { data: enrollment } = await admin
+    .from('enrollments')
+    .select('currency')
+    .eq('id', order.notes.enrollmentId)
+    .maybeSingle();
+  const enrollmentCurrency = enrollment?.currency ?? order.currency;
+
+  // Razorpay actually charged the card order.amount in order.currency (the
+  // practice's current display currency at order-creation time) — convert
+  // that real charged amount back into the enrollment's own currency before
+  // storing, so this enrollment's payments stay in one unit for
+  // v_enrollment_payment_status's plain-subtraction arithmetic.
+  const rates = await getFxRates();
+  const amountInEnrollmentCurrency = convertCurrency(order.amount / 100, order.currency, enrollmentCurrency, rates);
+
   const { error } = await admin.from('payments').insert({
     practice_id: client.practice_id,
     client_id: client.id,
     enrollment_id: order.notes.enrollmentId,
-    amount: order.amount / 100,
+    amount: amountInEnrollmentCurrency,
+    currency: enrollmentCurrency,
     payment_date: new Date().toISOString().slice(0, 10),
     mode: 'online',
     reference_no: params.paymentId,

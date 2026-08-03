@@ -1,7 +1,15 @@
 import Link from 'next/link';
 import { Building2, Users, Stethoscope, Wallet, type LucideIcon } from 'lucide-react';
-import { formatCurrency, getCurrencySymbol } from '@welldesk/shared';
+import { formatCurrency, convertCurrency, getCurrencySymbol } from '@welldesk/shared';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getFxRates } from '@/lib/fx-rates';
+
+// The platform spans practices billing in different currencies — real FX
+// conversion (not just relabeling) lets every practice's revenue be summed
+// into one honest platform-wide figure. USD is an arbitrary but neutral
+// choice for that headline figure; the per-practice table always shows each
+// practice in its own currency regardless.
+const PLATFORM_REPORTING_CURRENCY = 'USD';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -60,11 +68,12 @@ function StatCard({
 export default async function AdminPracticesPage() {
   const supabase = createAdminClient();
 
-  const [{ data: practices }, { data: clients }, { data: owners }, { data: payments }] = await Promise.all([
+  const [{ data: practices }, { data: clients }, { data: owners }, { data: payments }, rates] = await Promise.all([
     supabase.from('practices').select('id, name, tagline, owner_user_id, currency, suspended_at, created_at').order('created_at', { ascending: false }),
     supabase.from('clients').select('practice_id'),
     supabase.from('profiles').select('id, full_name, practice_id').eq('role', 'owner'),
-    supabase.from('payments').select('practice_id, amount, payment_date'),
+    supabase.from('payments').select('practice_id, amount, currency, payment_date'),
+    getFxRates(),
   ]);
 
   const countByPractice = new Map<string, number>();
@@ -75,28 +84,17 @@ export default async function AdminPracticesPage() {
   const ownerByPractice = new Map(owners?.map((o) => [o.practice_id, o.full_name]));
   const currencyByPractice = new Map((practices ?? []).map((p) => [p.id, p.currency ?? 'INR']));
 
+  // Each payment carries its own currency (the enrollment it was logged
+  // against), which can differ from a practice's current currency setting
+  // if that's changed since — convert every payment to the target currency
+  // (the practice's own for the per-practice table, one shared reporting
+  // currency for the platform-wide figures) before summing.
   const revenueByPractice = new Map<string, number>();
   for (const p of payments ?? []) {
-    revenueByPractice.set(p.practice_id, (revenueByPractice.get(p.practice_id) ?? 0) + Number(p.amount));
+    const practiceCurrency = currencyByPractice.get(p.practice_id) ?? 'INR';
+    const converted = convertCurrency(Number(p.amount), p.currency, practiceCurrency, rates);
+    revenueByPractice.set(p.practice_id, (revenueByPractice.get(p.practice_id) ?? 0) + converted);
   }
-
-  // Practices can each bill in a different currency, so a single summed
-  // "Platform Revenue" number would silently add e.g. INR and USD together.
-  // Instead, sum per-currency and headline whichever currency has the
-  // largest total — with everything else called out in a caveat rather than
-  // folded into a misleading number. The per-practice table below always
-  // shows each row in its own currency, so it's never ambiguous there.
-  const revenueByCurrency = new Map<string, number>();
-  for (const p of payments ?? []) {
-    const cur = currencyByPractice.get(p.practice_id) ?? 'INR';
-    revenueByCurrency.set(cur, (revenueByCurrency.get(cur) ?? 0) + Number(p.amount));
-  }
-  const currenciesInUse = [...revenueByCurrency.keys()];
-  const dominantCurrency = currenciesInUse.reduce(
-    (best, cur) => (!best || (revenueByCurrency.get(cur) ?? 0) > (revenueByCurrency.get(best) ?? 0) ? cur : best),
-    currenciesInUse[0] ?? 'INR'
-  );
-  const otherCurrencies = currenciesInUse.filter((c) => c !== dominantCurrency);
 
   // Stats
   const totalPractices = practices?.length ?? 0;
@@ -104,7 +102,10 @@ export default async function AdminPracticesPage() {
   const suspendedPractices = totalPractices - activePractices;
   const totalDietitians = owners?.length ?? 0;
   const totalClients = clients?.length ?? 0;
-  const totalRevenue = revenueByCurrency.get(dominantCurrency) ?? 0;
+  const totalRevenue = (payments ?? []).reduce(
+    (sum, p) => sum + convertCurrency(Number(p.amount), p.currency, PLATFORM_REPORTING_CURRENCY, rates),
+    0
+  );
 
   const now = new Date();
   const currentMonthKey = now.toISOString().slice(0, 7);
@@ -120,14 +121,13 @@ export default async function AdminPracticesPage() {
     monthLabels.set(key, d.toLocaleString('en-US', { month: 'short' }));
   }
 
-  // Trend chart is scoped to the dominant currency only, for the same
-  // reason the headline stat is — summing different currencies month over
-  // month would be just as misleading.
   const revenueByMonth = new Map<string, number>(monthKeys.map((k) => [k, 0]));
   for (const p of payments ?? []) {
-    if ((currencyByPractice.get(p.practice_id) ?? 'INR') !== dominantCurrency) continue;
     const key = p.payment_date.slice(0, 7);
-    if (revenueByMonth.has(key)) revenueByMonth.set(key, (revenueByMonth.get(key) ?? 0) + Number(p.amount));
+    if (revenueByMonth.has(key)) {
+      const converted = convertCurrency(Number(p.amount), p.currency, PLATFORM_REPORTING_CURRENCY, rates);
+      revenueByMonth.set(key, (revenueByMonth.get(key) ?? 0) + converted);
+    }
   }
   const revenueTrend = monthKeys.map((key) => ({ month: monthLabels.get(key)!, value: revenueByMonth.get(key) ?? 0 }));
 
@@ -165,8 +165,8 @@ export default async function AdminPracticesPage() {
           value={totalRevenue}
           icon={Wallet}
           tone="warning"
-          prefix={getCurrencySymbol(dominantCurrency)}
-          note={otherCurrencies.length > 0 ? `+ revenue in ${otherCurrencies.join(', ')} not included` : undefined}
+          prefix={getCurrencySymbol(PLATFORM_REPORTING_CURRENCY)}
+          note="Converted to USD at today's exchange rate"
         />
       </div>
 
@@ -174,7 +174,7 @@ export default async function AdminPracticesPage() {
         revenueTrend={revenueTrend}
         signupTrend={signupTrend}
         statusBreakdown={statusBreakdown}
-        currency={dominantCurrency}
+        currency={PLATFORM_REPORTING_CURRENCY}
       />
 
       <div className="rounded-md border">

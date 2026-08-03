@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { calculateBmi, getEffectiveEnrollmentStatus, formatCurrency } from '@welldesk/shared';
+import { calculateBmi, getEffectiveEnrollmentStatus, formatMoney, convertCurrency, formatCurrency } from '@welldesk/shared';
+import { getFxRates } from '@/lib/fx-rates';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,6 +35,7 @@ export default async function AdminClientDetailPage({
 
   const { data: practice } = await supabase.from('practices').select('currency').eq('id', practiceId).maybeSingle();
   const currency = practice?.currency ?? 'INR';
+  const rates = await getFxRates();
 
   const { data: client } = await supabase
     .from('clients')
@@ -46,13 +48,13 @@ export default async function AdminClientDetailPage({
 
   const { data: enrollments } = await supabase
     .from('enrollments')
-    .select('id, cycle_number, plan_type, start_date, expiry_date, status, plan_amount')
+    .select('id, cycle_number, plan_type, start_date, expiry_date, status, plan_amount, currency')
     .eq('client_id', clientId)
     .order('cycle_number', { ascending: false });
 
   const { data: payments } = await supabase
     .from('payments')
-    .select('id, amount, payment_date, mode, reference_no')
+    .select('id, amount, currency, payment_date, mode, reference_no')
     .eq('client_id', clientId)
     .order('payment_date', { ascending: false });
 
@@ -81,7 +83,10 @@ export default async function AdminClientDetailPage({
   const rows = metricsAccumulated.list;
   const latestWeightKg = [...rows].reverse().find((r) => r.weight_kg != null)?.weight_kg ?? null;
 
-  const totalPaid = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalPaid = (payments ?? []).reduce(
+    (sum, p) => sum + convertCurrency(Number(p.amount), p.currency, currency, rates),
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -130,7 +135,7 @@ export default async function AdminClientDetailPage({
                   <TableCell className="whitespace-nowrap">
                     {e.start_date} → {e.expiry_date}
                   </TableCell>
-                  <TableCell>{formatCurrency(e.plan_amount, currency)}</TableCell>
+                  <TableCell>{formatMoney(e.plan_amount, e.currency, currency, rates)}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant(getEffectiveEnrollmentStatus(e))} className="capitalize">
                       {getEffectiveEnrollmentStatus(e)}
@@ -187,7 +192,7 @@ export default async function AdminClientDetailPage({
                 {(payments ?? []).map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="whitespace-nowrap">{p.payment_date}</TableCell>
-                    <TableCell>{formatCurrency(p.amount, currency)}</TableCell>
+                    <TableCell>{formatMoney(p.amount, p.currency, currency, rates)}</TableCell>
                     <TableCell className="capitalize">{p.mode}</TableCell>
                   </TableRow>
                 ))}

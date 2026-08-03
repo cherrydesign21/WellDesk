@@ -3,7 +3,7 @@
 import { useTransition } from 'react';
 import { Trash2, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatCurrency } from '@welldesk/shared';
+import { formatMoney } from '@welldesk/shared';
 import { deletePayment } from '@/app/(dashboard)/clients/[clientId]/payments/actions';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 export type PaymentRow = {
   id: string;
   amount: number;
+  currency: string;
   payment_date: string;
   mode: string;
   reference_no: string | null;
@@ -24,12 +25,14 @@ export function PaymentsHistoryTable({
   clientId,
   rows,
   showReference = true,
-  currency,
+  displayCurrency,
+  rates,
 }: {
   clientId: string;
   rows: PaymentRow[];
   showReference?: boolean;
-  currency: string;
+  displayCurrency: string;
+  rates: Record<string, number>;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -66,7 +69,7 @@ export function PaymentsHistoryTable({
           {sorted.map((row) => (
             <TableRow key={row.id}>
               <TableCell className="whitespace-nowrap">{row.payment_date}</TableCell>
-              <TableCell>{formatCurrency(row.amount, currency)}</TableCell>
+              <TableCell>{formatMoney(row.amount, row.currency, displayCurrency, rates)}</TableCell>
               <TableCell className="capitalize">{row.mode}</TableCell>
               <TableCell className="whitespace-nowrap text-muted-foreground">
                 {row.plan_start && row.plan_end ? `${row.plan_start} → ${row.plan_end}` : '—'}

@@ -1,7 +1,8 @@
 import { Wallet } from 'lucide-react';
-import { formatCurrency } from '@welldesk/shared';
+import { formatCurrency, formatMoney, convertCurrency } from '@welldesk/shared';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { getFxRates } from '@/lib/fx-rates';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ExportMenu } from '@/components/ui/export-menu';
@@ -22,22 +23,26 @@ export default async function PaymentsPage({
   if (!result) return null;
 
   const currency = result.profile.practices?.currency ?? 'INR';
+  const rates = await getFxRates();
 
   let query = supabase
     .from('payments')
-    .select('id, amount, payment_date, mode, reference_no, notes, clients(full_name)')
+    .select('id, amount, currency, payment_date, mode, reference_no, notes, clients(full_name)')
     .order('payment_date', { ascending: false });
 
   if (from) query = query.gte('payment_date', from);
   if (to) query = query.lte('payment_date', to);
 
   const { data: payments } = await query;
-  const total = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const total = (payments ?? []).reduce(
+    (sum, p) => sum + convertCurrency(Number(p.amount), p.currency, currency, rates),
+    0
+  );
 
   const exportRows = (payments ?? []).map((p) => [
     p.payment_date,
     (p.clients as unknown as { full_name: string } | null)?.full_name ?? '—',
-    formatCurrency(p.amount, currency),
+    formatMoney(p.amount, p.currency, currency, rates),
     p.mode,
     p.reference_no ?? '—',
   ]);
@@ -101,7 +106,7 @@ export default async function PaymentsPage({
               <TableRow key={p.id}>
                 <TableCell className="whitespace-nowrap">{p.payment_date}</TableCell>
                 <TableCell>{(p.clients as unknown as { full_name: string } | null)?.full_name ?? '—'}</TableCell>
-                <TableCell>{formatCurrency(p.amount, currency)}</TableCell>
+                <TableCell>{formatMoney(p.amount, p.currency, currency, rates)}</TableCell>
                 <TableCell className="capitalize">{p.mode}</TableCell>
                 <TableCell>{p.reference_no ?? '—'}</TableCell>
               </TableRow>

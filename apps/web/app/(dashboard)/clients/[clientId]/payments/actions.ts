@@ -21,7 +21,7 @@ export async function createPayment(clientId: string, values: PaymentInput) {
 
   const { data: latestEnrollment } = await supabase
     .from('enrollments')
-    .select('id')
+    .select('id, currency')
     .eq('client_id', clientId)
     .order('cycle_number', { ascending: false })
     .limit(1)
@@ -32,6 +32,12 @@ export async function createPayment(clientId: string, values: PaymentInput) {
     client_id: clientId,
     enrollment_id: latestEnrollment?.id ?? null,
     amount: data.amount,
+    // Inherits the enrollment's own currency (not the practice's possibly
+    // since-changed current preference) so plan_amount and every payment
+    // against it stay in one unit — v_enrollment_payment_status just
+    // subtracts these directly, so mixing units here would silently
+    // corrupt amount_due for that enrollment.
+    currency: latestEnrollment?.currency ?? profile.practices?.currency ?? 'INR',
     payment_date: data.paymentDate,
     mode: data.mode,
     reference_no: data.referenceNo || null,

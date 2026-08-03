@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { UtensilsCrossed, CalendarDays, Wallet, ArrowRight, Mail, Phone, Activity } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { requireClient } from '@/lib/auth';
-import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime, formatCurrency } from '@welldesk/shared';
+import { calculateBmi, utcIsoToLocalDateKey, utcIsoToLocalTime, formatMoney } from '@welldesk/shared';
+import { getFxRates } from '@/lib/fx-rates';
 import { MetricsChart } from '@/components/metrics/metrics-chart';
 import { MetricsCompare } from '@/components/metrics/metrics-compare';
 import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dialog';
@@ -54,11 +55,12 @@ export default async function PortalPage() {
 
   const { data: payments } = await supabase
     .from('payments')
-    .select('id, amount, payment_date, mode, reference_no')
+    .select('id, amount, currency, payment_date, mode, reference_no')
     .eq('client_id', client.id)
     .order('payment_date', { ascending: false });
 
   const paymentDue = await getPortalPaymentDue(client.id, client.practice_id);
+  const rates = await getFxRates();
 
   const timezone = client.practices?.timezone ?? 'Asia/Kolkata';
   const { data: appointments } = await supabase
@@ -200,7 +202,7 @@ export default async function PortalPage() {
                 {payments?.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>{p.payment_date}</TableCell>
-                    <TableCell>{formatCurrency(p.amount, paymentDue.currency)}</TableCell>
+                    <TableCell>{formatMoney(p.amount, p.currency, paymentDue.currency, rates)}</TableCell>
                     <TableCell className="capitalize">{p.mode}</TableCell>
                     <TableCell>{p.reference_no ?? '—'}</TableCell>
                   </TableRow>

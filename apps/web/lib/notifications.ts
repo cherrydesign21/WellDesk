@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { formatCurrency } from '@welldesk/shared';
+import { formatCurrency, convertCurrency } from '@welldesk/shared';
+import { getFxRates } from './fx-rates';
 
 export type NotificationItem = {
   id: string;
@@ -20,7 +21,7 @@ export async function getNotifications(supabase: SupabaseClient): Promise<Notifi
   // practices_select's RLS policy already scopes a bare select to exactly
   // the caller's own practice row (id = current_practice_id()), so no
   // explicit .eq() filter is needed here.
-  const [{ data: expiring }, { data: overdue }, { data: practice }] = await Promise.all([
+  const [{ data: expiring }, { data: overdue }, { data: practice }, rates] = await Promise.all([
     supabase
       .from('enrollments')
       .select('client_id, expiry_date')
@@ -30,15 +31,16 @@ export async function getNotifications(supabase: SupabaseClient): Promise<Notifi
       .limit(5),
     supabase
       .from('v_enrollment_payment_status')
-      .select('client_id, amount_due')
+      .select('client_id, amount_due, currency')
       .eq('payment_status', 'overdue')
       .limit(5),
     supabase.from('practices').select('currency').maybeSingle(),
+    getFxRates(),
   ]);
   const currency = practice?.currency ?? 'INR';
 
   const expiringRows = (expiring ?? []) as { client_id: string; expiry_date: string }[];
-  const overdueRows = (overdue ?? []) as { client_id: string; amount_due: number }[];
+  const overdueRows = (overdue ?? []) as { client_id: string; amount_due: number; currency: string }[];
 
   const clientIds = [...new Set([...expiringRows, ...overdueRows].map((r) => r.client_id))];
   const nameById = new Map<string, string>();
@@ -64,7 +66,7 @@ export async function getNotifications(supabase: SupabaseClient): Promise<Notifi
       id: `overdue-${row.client_id}`,
       clientId: row.client_id,
       label: nameById.get(row.client_id) ?? 'Unknown',
-      sub: `Payment of ${formatCurrency(row.amount_due, currency)} overdue`,
+      sub: `Payment of ${formatCurrency(convertCurrency(row.amount_due, row.currency, currency, rates), currency)} overdue`,
       href: `/clients/${row.client_id}`,
     });
   }

@@ -7,10 +7,12 @@ import {
   utcIsoToLocalTime,
   formatCurrency,
   getCurrencySymbol,
+  convertCurrency,
   PLAN_TYPE_LABELS,
   type ClientStatus,
   type AppointmentMode,
 } from '@welldesk/shared';
+import { getFxRates } from '@/lib/fx-rates';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
@@ -98,20 +100,21 @@ export default async function DashboardPage() {
   const now = new Date();
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString().slice(0, 10);
 
-  const [profileResult, { data: clientsRaw }, { data: metricsRaw }, { data: revenueRows }, { data: overdueRows }, { data: upcomingAppointments }] =
+  const [profileResult, { data: clientsRaw }, { data: metricsRaw }, { data: revenueRows }, { data: overdueRows }, { data: upcomingAppointments }, rates] =
     await Promise.all([
       getCurrentProfile(supabase),
       supabase
         .from('clients')
         .select('id, full_name, status, photo_url, created_at, enrollments(plan_type, expiry_date, status, cycle_number)'),
       supabase.from('health_metrics').select('client_id, recorded_at, weight_kg').order('recorded_at', { ascending: false }),
-      supabase.from('payments').select('amount, payment_date').gte('payment_date', sixMonthsAgo),
-      supabase.from('v_enrollment_payment_status').select('client_id, amount_due').eq('payment_status', 'overdue'),
+      supabase.from('payments').select('amount, currency, payment_date').gte('payment_date', sixMonthsAgo),
+      supabase.from('v_enrollment_payment_status').select('client_id, amount_due, currency').eq('payment_status', 'overdue'),
       supabase
         .from('appointments')
         .select('id, client_id, starts_at, notes, mode, clients(full_name)')
         .eq('status', 'scheduled')
         .order('starts_at', { ascending: true }),
+      getFxRates(),
     ]);
 
   if (!profileResult) return null;
@@ -167,7 +170,10 @@ export default async function DashboardPage() {
   }
   for (const p of revenueRows ?? []) {
     const key = p.payment_date.slice(0, 7);
-    if (revenueByMonthKey.has(key)) revenueByMonthKey.set(key, (revenueByMonthKey.get(key) ?? 0) + Number(p.amount));
+    if (revenueByMonthKey.has(key)) {
+      const converted = convertCurrency(Number(p.amount), p.currency, currency, rates);
+      revenueByMonthKey.set(key, (revenueByMonthKey.get(key) ?? 0) + converted);
+    }
   }
 
   const revenueTrend = monthKeys.map((key) => ({
@@ -230,7 +236,7 @@ export default async function DashboardPage() {
       id: `overdue-${row.client_id}`,
       clientId: row.client_id,
       clientName: clientNameById.get(row.client_id) ?? 'Unknown',
-      reason: `Payment of ${formatCurrency(row.amount_due, currency)} overdue`,
+      reason: `Payment of ${formatCurrency(convertCurrency(row.amount_due, row.currency, currency, rates), currency)} overdue`,
       kind: 'overdue',
     });
   }

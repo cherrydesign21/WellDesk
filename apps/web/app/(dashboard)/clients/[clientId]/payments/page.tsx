@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { formatCurrency } from '@welldesk/shared';
+import { formatMoney } from '@welldesk/shared';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { getFxRates } from '@/lib/fx-rates';
 import { ExportMenu } from '@/components/ui/export-menu';
 import { LogPaymentDialog } from '@/components/payments/log-payment-dialog';
 import { PaymentsHistoryTable } from '@/components/payments/payments-history-table';
@@ -24,6 +25,7 @@ export default async function ClientPaymentsPage({
   if (!client) notFound();
 
   const currency = result.profile.practices?.currency ?? 'INR';
+  const rates = await getFxRates();
 
   const { data: enrollments } = await supabase
     .from('enrollments')
@@ -32,7 +34,7 @@ export default async function ClientPaymentsPage({
 
   const { data: payments } = await supabase
     .from('payments')
-    .select('id, amount, payment_date, mode, reference_no, notes, enrollment_id')
+    .select('id, amount, currency, payment_date, mode, reference_no, notes, enrollment_id')
     .eq('client_id', clientId)
     .order('payment_date', { ascending: false });
 
@@ -67,7 +69,7 @@ export default async function ClientPaymentsPage({
             headers={PAYMENT_EXPORT_HEADERS}
             rows={paymentRows.map((p) => [
               p.payment_date,
-              formatCurrency(p.amount, currency),
+              formatMoney(p.amount, p.currency, currency, rates),
               p.mode,
               p.reference_no ?? '—',
               p.plan_start && p.plan_end ? `${p.plan_start} to ${p.plan_end}` : '—',
@@ -78,7 +80,7 @@ export default async function ClientPaymentsPage({
         </div>
       </div>
 
-      <PaymentsHistoryTable clientId={clientId} rows={paymentRows} currency={currency} />
+      <PaymentsHistoryTable clientId={clientId} rows={paymentRows} displayCurrency={currency} rates={rates} />
     </div>
   );
 }

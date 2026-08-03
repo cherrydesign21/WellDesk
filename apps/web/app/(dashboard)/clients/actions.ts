@@ -125,6 +125,7 @@ export async function createClientWithEnrollment(values: CreateClientInput) {
       start_date: data.startDate,
       expiry_date: expiryDate,
       plan_amount: data.planAmount,
+      currency: profile.practices?.currency ?? 'INR',
       created_by: profile.id,
     })
     .select('id')
