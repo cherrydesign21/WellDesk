@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {
   Users,
   UtensilsCrossed,
@@ -142,7 +141,7 @@ export default async function LandingPage() {
               so you spend less time on admin and more time with clients.
             </p>
             <div className="mt-8 flex items-center justify-center gap-4">
-              <Button variant="brand" size="submit" render={<Link href="/register" />}>
+              <Button variant="brand" size="submit" render={<a href="https://my.welldesk.app/register" />}>
                 Get started free
                 <ArrowRight className="h-4 w-4" />
               </Button>
@@ -296,7 +295,7 @@ export default async function LandingPage() {
             <Button
               size="submit"
               className="bg-white text-[#454e17] hover:bg-[#f7f1e3]"
-              render={<Link href="/register" />}
+              render={<a href="https://my.welldesk.app/register" />}
             >
               Get started free
               <ArrowRight className="h-4 w-4" />

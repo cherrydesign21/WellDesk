@@ -17,7 +17,7 @@ export function MarketingFooter() {
           <Link href="/suggestions" className="hover:text-[#3c1d0c]">Suggestions</Link>
           <Link href="/privacy" className="hover:text-[#3c1d0c]">Privacy Policy</Link>
           <Link href="/terms" className="hover:text-[#3c1d0c]">Terms of Use</Link>
-          <Link href="/portal/login" prefetch={false} className="hover:text-[#3c1d0c]">Client Login</Link>
+          <a href="https://my.welldesk.app/portal/login" className="hover:text-[#3c1d0c]">Client Login</a>
         </div>
       </div>
     </footer>

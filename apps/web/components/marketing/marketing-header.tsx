@@ -17,10 +17,14 @@ export function MarketingHeader() {
           <Link href="/contact" className="hover:text-[#3c1d0c]">Contact</Link>
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-medium text-[#3c1d0c]/80 hover:text-[#3c1d0c]">
+          {/* Absolute URLs — the app lives on a different host (my.welldesk.app). */}
+          <a
+            href="https://my.welldesk.app/login"
+            className="text-sm font-medium text-[#3c1d0c]/80 hover:text-[#3c1d0c]"
+          >
             Log in
-          </Link>
-          <Button variant="brand" size="sm" render={<Link href="/register" />}>
+          </a>
+          <Button variant="brand" size="sm" render={<a href="https://my.welldesk.app/register" />}>
             Get started
           </Button>
         </div>

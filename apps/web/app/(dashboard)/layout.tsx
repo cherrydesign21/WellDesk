@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { requireProfile } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { getNotifications } from '@/lib/notifications';
@@ -7,6 +8,9 @@ import { ProfileMenu } from '@/components/dashboard/profile-menu';
 import { ClientSearch } from '@/components/dashboard/client-search';
 import { NotificationsMenu } from '@/components/dashboard/notifications-menu';
 import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
+
+// Signed-in-only content — never indexed, regardless of which host serves it.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // requireProfile() and getNotifications() don't depend on each other —

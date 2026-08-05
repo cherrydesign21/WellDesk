@@ -1,7 +1,11 @@
+import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth';
 import { AppThemeBody } from '@/components/shell/app-theme-body';
 import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { ProfileMenu } from '@/components/dashboard/profile-menu';
+
+// Platform-internal admin panel — never indexed, regardless of which host serves it.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, profile } = await requireSuperAdmin();

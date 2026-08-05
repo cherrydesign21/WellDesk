@@ -15,7 +15,50 @@ const PUBLIC_PATHS = [
   '/suggestions',
 ];
 
+// welldesk.app is the marketing/SEO surface; my.welldesk.app is the product
+// (dashboard, portal, admin, and all the auth pages that lead into it).
+// /privacy and /terms deliberately stay reachable on both hosts — they're
+// linked from inside the app as well as the marketing footer. Every other
+// path belongs to exactly one side, so a request for it on the wrong host
+// gets redirected across rather than 404ing or duplicating content.
+const APP_HOST = 'my.welldesk.app';
+const MARKETING_HOSTS = new Set(['welldesk.app', 'www.welldesk.app']);
+const MARKETING_ONLY_PATHS = new Set(['/', '/about', '/contact', '/suggestions']);
+const SHARED_PATHS = new Set(['/privacy', '/terms']);
+
 export async function proxy(request: NextRequest) {
+  const host = request.headers.get('host') ?? '';
+  const isAppHost = host === APP_HOST;
+  const isMarketingHost = MARKETING_HOSTS.has(host);
+
+  // Local dev and Vercel preview deployments have neither hostname, so this
+  // whole split is a no-op there — one server keeps answering every route,
+  // exactly like before the two production hosts existed. API routes are
+  // also skipped entirely — Vercel Cron and other server-to-server callers
+  // hit whichever host is configured and may not follow redirects, and
+  // there's no UX/SEO reason to redirect a JSON endpoint across hosts.
+  if ((isAppHost || isMarketingHost) && !request.nextUrl.pathname.startsWith('/api/')) {
+    const { pathname, search } = request.nextUrl;
+
+    // The marketing landing page has no equivalent on the app host — send
+    // root visits straight to login rather than across to welldesk.app.
+    // Must run before the generic redirect below, which would otherwise
+    // treat '/' as a marketing-only path and send it there instead.
+    if (isAppHost && pathname === '/') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    if (!SHARED_PATHS.has(pathname)) {
+      const isMarketingOnlyPath = MARKETING_ONLY_PATHS.has(pathname);
+      if (isAppHost && isMarketingOnlyPath) {
+        return NextResponse.redirect(new URL(`https://welldesk.app${pathname}${search}`));
+      }
+      if (isMarketingHost && !isMarketingOnlyPath) {
+        return NextResponse.redirect(new URL(`https://${APP_HOST}${pathname}${search}`));
+      }
+    }
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

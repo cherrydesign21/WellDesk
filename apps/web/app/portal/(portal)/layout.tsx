@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Plus } from 'lucide-react';
 import { requireClient } from '@/lib/auth';
 import { portalLogout } from '@/app/portal/actions';
@@ -7,6 +8,9 @@ import { PortalLogMetricDialog } from '@/components/portal/portal-log-metric-dia
 import { PortalNotificationsMenu } from '@/components/portal/portal-notifications-menu';
 import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
 import { Button } from '@/components/ui/button';
+
+// Client health/payment data — never indexed, regardless of which host serves it.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const { client } = await requireClient();
