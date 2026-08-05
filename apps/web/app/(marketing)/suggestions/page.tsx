@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import { SuggestionForm } from '@/components/marketing/suggestion-form';
+
+export const metadata: Metadata = {
+  title: 'Suggest a Feature',
+  description: 'Tell us what your dietitian practice needs — WellDesk is built around real requests from dietitians.',
+};
 
 export default function SuggestionsPage() {
   return (

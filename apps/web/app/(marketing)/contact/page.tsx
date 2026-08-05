@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import { ContactForm } from '@/components/marketing/contact-form';
+
+export const metadata: Metadata = {
+  title: 'Contact Us',
+  description: 'Questions, feedback, or a bug to report — get in touch with the WellDesk team.',
+};
 
 export default function ContactPage() {
   return (

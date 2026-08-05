@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'How WellDesk stores and isolates the client and health data entered by dietitian practices.',
+};
+
 export default function PrivacyPolicyPage() {
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-16 sm:px-6 sm:py-24">

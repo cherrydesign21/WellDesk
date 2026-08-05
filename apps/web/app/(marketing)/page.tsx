@@ -10,6 +10,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Reveal } from '@/components/marketing/reveal';
+import { TestimonialsSection } from '@/components/marketing/testimonials-section';
+import { getActiveTestimonials } from '@/lib/testimonials';
+import { createPublicClient } from '@/lib/supabase/public';
+
+// Testimonials rarely change, so an hourly revalidate keeps the page mostly
+// static (served from cache) rather than opting the whole landing page into
+// per-request dynamic rendering just for this one section.
+export const revalidate = 3600;
 
 const FEATURES = [
   {
@@ -67,9 +75,46 @@ const FAQS = [
   },
 ];
 
-export default function LandingPage() {
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((faq) => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+};
+
+// Pricing here must match the FAQ's actual "What does it cost?" answer
+// exactly — mismatched structured data is a real risk, not just an
+// inconsistency, since Google explicitly penalizes it.
+const softwareApplicationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'WellDesk',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  description:
+    'Practice management software for dietitians — client tracking, diet plan builder, payments, appointments, and a branded client portal.',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+    description: 'Free during early access',
+  },
+};
+
+export default async function LandingPage() {
+  const supabase = createPublicClient();
+  const testimonials = await getActiveTestimonials(supabase);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div
@@ -219,6 +264,8 @@ export default function LandingPage() {
           </Reveal>
         </div>
       </section>
+
+      <TestimonialsSection testimonials={testimonials} />
 
       {/* FAQ */}
       <section id="faq" className="mx-auto w-full max-w-3xl px-4 py-20 sm:px-6">

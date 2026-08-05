@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Use',
+  description: 'The terms for using WellDesk to manage clients, diet plans, payments, and appointments.',
+};
+
 export default function TermsOfUsePage() {
   return (
     <section className="mx-auto w-full max-w-2xl px-4 py-16 sm:px-6 sm:py-24">

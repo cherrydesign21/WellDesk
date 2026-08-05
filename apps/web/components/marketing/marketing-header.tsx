@@ -13,6 +13,7 @@ export function MarketingHeader() {
           <Link href="/" className="hover:text-[#3c1d0c]">Home</Link>
           <Link href="/#features" className="hover:text-[#3c1d0c]">Features</Link>
           <Link href="/#faq" className="hover:text-[#3c1d0c]">FAQ</Link>
+          <Link href="/about" className="hover:text-[#3c1d0c]">About</Link>
           <Link href="/contact" className="hover:text-[#3c1d0c]">Contact</Link>
         </nav>
         <div className="flex items-center gap-3">

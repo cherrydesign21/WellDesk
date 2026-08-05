@@ -14,8 +14,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WellDesk",
-  description: "Dietitian practice management platform",
+  metadataBase: new URL("https://www.welldesk.app"),
+  title: {
+    default: "WellDesk — Practice Management Software for Dietitians",
+    template: "%s | WellDesk",
+  },
+  description:
+    "WellDesk brings client tracking, diet plans, payments, appointments, and a branded client portal into one place built specifically for dietitians.",
+  openGraph: {
+    type: "website",
+    siteName: "WellDesk",
+    url: "https://www.welldesk.app",
+    title: "WellDesk — Practice Management Software for Dietitians",
+    description:
+      "Client tracking, diet plans, payments, appointments, and a branded client portal — one system built for how dietitians actually work.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WellDesk — Practice Management Software for Dietitians",
+    description:
+      "Client tracking, diet plans, payments, appointments, and a branded client portal — one system built for how dietitians actually work.",
+  },
 };
 
 export const viewport: Viewport = {

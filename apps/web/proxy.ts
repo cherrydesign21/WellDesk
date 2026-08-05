@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 
 const PUBLIC_PATHS = [
   '/',
+  '/about',
   '/login',
   '/register',
   '/forgot-password',
@@ -72,7 +73,12 @@ export const config = {
   matcher: [
     // .html is excluded for search-engine site-verification files (e.g.
     // Google's google<token>.html) — no app route ever resolves to a
-    // literal .html path, so this can't shadow real pages.
-    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
+    // literal .html path, so this can't shadow real pages. llms.txt is the
+    // same situation as robots.txt/sitemap.xml: a static public/ file with
+    // no session, so it must never hit the !user redirect. opengraph-image
+    // and twitter-image are Next.js's generated-image route handlers — their
+    // URLs carry no file extension for the .png/.jpg exclusion below to
+    // catch, so they need to be named explicitly too.
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sitemap.xml|robots.txt|llms.txt|opengraph-image|twitter-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 };

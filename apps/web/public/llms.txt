@@ -1,0 +1,23 @@
+# WellDesk
+
+> WellDesk is practice management software for dietitians: client tracking, a diet plan builder with a built-in food database, payment tracking, appointment scheduling, in-app messaging, and a branded client portal — replacing the spreadsheets, WhatsApp threads, and notebooks most solo and small dietitian practices run on today.
+
+WellDesk is free during early access. Each practice's client and health data is isolated at the database level and never visible to other practices on the platform.
+
+## Product
+
+- [Home](https://www.welldesk.app/): overview, features, and FAQ
+- [About](https://www.welldesk.app/about): why WellDesk exists and how it handles practice data
+- [Get started](https://www.welldesk.app/register): create a free practice account
+- [Dietitian login](https://www.welldesk.app/login)
+- [Client portal login](https://www.welldesk.app/portal/login)
+
+## Contact
+
+- [Contact us](https://www.welldesk.app/contact)
+- [Suggest a feature](https://www.welldesk.app/suggestions)
+
+## Policies
+
+- [Privacy Policy](https://www.welldesk.app/privacy)
+- [Terms of Use](https://www.welldesk.app/terms)

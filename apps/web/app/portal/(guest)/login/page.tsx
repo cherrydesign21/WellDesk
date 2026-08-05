@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentClient } from '@/lib/auth';
 import { PortalLoginForm } from '@/components/portal/portal-login-form';
+
+export const metadata: Metadata = {
+  title: 'Client Portal Login',
+  description: 'Sign in to your client portal to view your diet plan, log your progress, and message your dietitian.',
+};
 
 export default async function PortalLoginPage() {
   const supabase = await createClient();
