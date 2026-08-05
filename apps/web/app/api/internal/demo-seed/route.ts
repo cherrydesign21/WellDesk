@@ -5,8 +5,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 // pscherrydesign@gmail.com) — NOT a general product feature. Hardcoding the
 // practice ID here, rather than accepting one as a parameter, is what keeps
 // this endpoint from ever being able to touch a real tenant's data even if
-// the secret leaked. Called daily by a scheduled Claude Code cloud routine
-// (not Vercel Cron — this isn't part of the product's own cron config).
+// a secret leaked. Triggered daily by Vercel Cron (see vercel.json) — an
+// earlier attempt to trigger this from a scheduled Claude Code cloud
+// routine fired on schedule but never actually issued the request, so this
+// now uses the same proven mechanism as /api/cron/checkin-reminders.
 const DEMO_PRACTICE_ID = '141ced24-c795-44ac-b516-30fa207533d4';
 const DIETITIAN_PROFILE_ID = '2140beef-2852-40ef-ad68-8b84e89b9e90';
 const PAYMENT_INTERVAL_DAYS = 30;
@@ -24,8 +26,13 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export async function GET(request: NextRequest) {
+  // Vercel Cron auto-attaches "Bearer $CRON_SECRET" to every cron-configured
+  // path — DEMO_SEED_SECRET stays accepted too, purely so this can still be
+  // triggered manually for testing without needing Vercel's own secret.
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.DEMO_SEED_SECRET}`) {
+  const validAuth =
+    authHeader === `Bearer ${process.env.CRON_SECRET}` || authHeader === `Bearer ${process.env.DEMO_SEED_SECRET}`;
+  if (!validAuth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
